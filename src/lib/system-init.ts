@@ -1,9 +1,14 @@
 import { ecosystemBridge } from './ecosystem-bridge'
 import { contextGraph } from './context-graph'
 import { aiOrchestrator } from './ai-orchestrator'
-import { MockAIProvider } from './ai-providers/mock-provider'
+import { MockAIProvider } from './ai-providers/mock.provider'
 import { AI_PROMPTS } from './ai-prompts'
 import { EVENT_TYPES } from './event-schemas'
+import { taskService } from '../services/task.service'
+import { notificationService } from '../services/notification.service'
+import { commandPaletteService } from '../services/command-palette.service'
+import { searchService } from '../services/search.service'
+import { credentialBroker } from './credential-broker'
 
 export class SystemInitializer {
   private static initialized = false
@@ -17,10 +22,7 @@ export class SystemInitializer {
     console.log('🚀 Initializing WhisperrTask ecosystem...')
 
     // 1. Initialize AI Provider
-    const mockProvider = new MockAIProvider({
-      name: 'mock',
-      model: 'gpt-4',
-    })
+    const mockProvider = new MockAIProvider()
     aiOrchestrator.registerProvider(mockProvider)
     aiOrchestrator.setFallbackChain(['mock'])
 
@@ -31,6 +33,16 @@ export class SystemInitializer {
 
     // 3. Set up Event Bridge subscriptions
     this.setupEventHandlers()
+
+    // 4. Initialize services (they will set up their own handlers)
+    const services = [
+      taskService,
+      notificationService,
+      commandPaletteService,
+      searchService,
+      credentialBroker,
+    ]
+    console.log(`✅ ${services.length} services initialized`)
 
     this.initialized = true
     console.log('✅ System initialized successfully')
@@ -205,10 +217,59 @@ export class SystemInitializer {
 if (typeof window !== 'undefined') {
   SystemInitializer.initialize().catch(console.error)
   
+  // Expose services for debugging and demo purposes
   ;(window as any).__whisperr = {
     system: SystemInitializer,
     ecosystemBridge,
     contextGraph,
     aiOrchestrator,
+    services: {
+      task: taskService,
+      notification: notificationService,
+      commandPalette: commandPaletteService,
+      search: searchService,
+      credential: credentialBroker,
+    },
+    // Demo helpers
+    demo: {
+      createTaskFromNote: () => {
+        ecosystemBridge.emit({
+          type: EVENT_TYPES.NOTE_TASK_CREATED,
+          source: 'whisperrnote',
+          target: 'whisperrtask',
+          version: '1.0',
+          payload: {
+            noteId: 'demo-note-' + Date.now(),
+            noteTitle: 'Demo Note',
+            checkboxText: 'Demo task created at ' + new Date().toLocaleTimeString(),
+            checkboxIndex: 0,
+            noteSnippet: 'This is a demo task created from a simulated note...',
+            noteUrl: 'whisperrnote://notes/demo',
+          },
+          metadata: { userId: 'demo-user' },
+        })
+      },
+      createTaskFromMeeting: () => {
+        ecosystemBridge.emit({
+          type: EVENT_TYPES.MEET_ACTION_ITEM_DETECTED,
+          source: 'whisperrmeet',
+          target: 'whisperrtask',
+          version: '1.0',
+          payload: {
+            meetingId: 'demo-meeting-' + Date.now(),
+            meetingTitle: 'Demo Meeting',
+            transcript: 'During this meeting, John agreed to complete the demo task...',
+            actionItem: 'Complete the demo task by end of week',
+            speaker: 'John Doe',
+            timestamp: Date.now(),
+            participants: [
+              { id: '1', name: 'John Doe', email: 'john@demo.com' },
+              { id: '2', name: 'Jane Smith', email: 'jane@demo.com' },
+            ],
+          },
+          metadata: { userId: 'demo-user' },
+        })
+      },
+    },
   }
 }

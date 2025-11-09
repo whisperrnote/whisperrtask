@@ -215,3 +215,17 @@ Respond with JSON:
     variables: ['taskTitle', 'description', 'constraints'],
   },
 }
+
+// Register all prompts with the AI orchestrator when the module is loaded
+import { aiOrchestrator } from './ai-orchestrator'
+
+export function registerAIPrompts(): void {
+  Object.values(AI_PROMPTS).forEach(prompt => {
+    aiOrchestrator.registerTemplate(prompt)
+  })
+}
+
+// Auto-register on module load
+if (typeof window !== 'undefined') {
+  registerAIPrompts()
+}
