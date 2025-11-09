@@ -41,3 +41,10 @@ export interface EventBridgeConfig {
   persistEvents?: boolean
   enableMetrics?: boolean
 }
+
+export interface CrossAppMessage {
+  type: 'ecosystem-event'
+  source: EcosystemApp
+  target?: EcosystemApp
+  event: EcosystemEvent
+}

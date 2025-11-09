@@ -4,8 +4,10 @@ import type {
   EventSubscription,
   EventQueueItem,
   EventBridgeConfig,
-  EcosystemApp 
+  EcosystemApp,
+  CrossAppMessage 
 } from '../types/events'
+import { EVENT_TYPES } from './event-schemas'
 
 export class EcosystemBridge {
   private static instance: EcosystemBridge
@@ -19,6 +21,8 @@ export class EcosystemBridge {
     failed: number
     retried: number
   } = { sent: 0, received: 0, failed: 0, retried: 0 }
+  private crossAppHandlers: Map<EcosystemApp, (message: CrossAppMessage) => void> = new Map()
+  private messageChannel?: BroadcastChannel
 
   private constructor(config: EventBridgeConfig = {}) {
     this.config = {
@@ -28,10 +32,18 @@ export class EcosystemBridge {
       enableMetrics: config.enableMetrics ?? true,
     }
 
-    if (typeof window !== 'undefined' && this.config.persistEvents) {
-      this.restoreQueue()
-      window.addEventListener('beforeunload', () => this.persistQueue())
+    if (typeof window !== 'undefined') {
+      if (this.config.persistEvents) {
+        this.restoreQueue()
+        window.addEventListener('beforeunload', () => this.persistQueue())
+      }
+      
+      // Setup cross-app communication channel
+      this.setupCrossAppCommunication()
     }
+
+    // Setup default event handlers for ecosystem integration
+    this.setupDefaultHandlers()
   }
 
   static getInstance(config?: EventBridgeConfig): EcosystemBridge {
@@ -251,6 +263,102 @@ export class EcosystemBridge {
   getSubscriptionCount(): number {
     return Array.from(this.subscriptions.values())
       .reduce((sum, subs) => sum + subs.size, 0)
+  }
+
+  private setupCrossAppCommunication(): void {
+    // BroadcastChannel for same-origin cross-tab/window communication
+    if ('BroadcastChannel' in window) {
+      this.messageChannel = new BroadcastChannel('whisperr-ecosystem')
+      this.messageChannel.onmessage = (event) => {
+        if (event.data?.type === 'ecosystem-event') {
+          this.handleCrossAppMessage(event.data as CrossAppMessage)
+        }
+      }
+    }
+
+    // Listen for postMessage from iframes (for embedded apps)
+    window.addEventListener('message', (event) => {
+      if (event.data?.type === 'ecosystem-event') {
+        this.handleCrossAppMessage(event.data as CrossAppMessage)
+      }
+    })
+  }
+
+  private handleCrossAppMessage(message: CrossAppMessage): void {
+    const handler = this.crossAppHandlers.get(message.source)
+    if (handler) {
+      handler(message)
+    }
+
+    // Convert to standard event and emit
+    const event: Omit<EcosystemEvent, 'id' | 'timestamp'> = {
+      type: message.event.type,
+      source: message.source,
+      target: message.target,
+      version: message.event.version || '1.0',
+      payload: message.event.payload,
+      metadata: {
+        userId: message.event.metadata?.userId || 'system',
+        sessionId: message.event.metadata?.sessionId,
+        traceId: message.event.metadata?.traceId,
+        priority: message.event.metadata?.priority || 'normal',
+      },
+    }
+
+    this.emit(event)
+  }
+
+  registerCrossAppHandler(app: EcosystemApp, handler: (message: CrossAppMessage) => void): void {
+    this.crossAppHandlers.set(app, handler)
+  }
+
+  // Send event to other apps via broadcast channel
+  broadcastToEcosystem<T = any>(event: EcosystemEvent<T>): void {
+    const message: CrossAppMessage = {
+      type: 'ecosystem-event',
+      source: event.source,
+      target: event.target,
+      event,
+    }
+
+    if (this.messageChannel) {
+      this.messageChannel.postMessage(message)
+    }
+
+    // Also send via postMessage to parent if in iframe
+    if (window.parent !== window) {
+      window.parent.postMessage(message, '*')
+    }
+  }
+
+  private setupDefaultHandlers(): void {
+    // Handle WhisperrNote task creation events
+    this.subscribe(EVENT_TYPES.NOTE_TASK_CREATED, async (event) => {
+      if (event.target === 'whisperrtask') {
+        console.log('[EcosystemBridge] Received task from WhisperrNote:', event.payload)
+        // Task creation will be handled by the task service
+      }
+    })
+
+    // Handle WhisperrMeet action item events
+    this.subscribe(EVENT_TYPES.MEET_ACTION_ITEM_DETECTED, async (event) => {
+      if (event.target === 'whisperrtask') {
+        console.log('[EcosystemBridge] Received action item from WhisperrMeet:', event.payload)
+        // Task creation will be handled by the task service
+      }
+    })
+
+    // Handle WhisperrPass credential events
+    this.subscribe(EVENT_TYPES.PASS_CREDENTIAL_APPROVED, async (event) => {
+      console.log('[EcosystemBridge] Credential approved:', event.payload)
+      // Credential handling will be done by the credential broker
+    })
+
+    // Handle ecosystem-wide search queries
+    this.subscribe(EVENT_TYPES.SEARCH_QUERY, async (event) => {
+      console.log('[EcosystemBridge] Search query received:', event.payload)
+      // Search handling will be done by federated search service
+    })
   }
 }
 
