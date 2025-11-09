@@ -1,18 +1,26 @@
 import type { Task, ContextLink } from '../../types'
-import { 
-  CheckSquare, 
-  Circle, 
-  Clock, 
-  FileText, 
-  Video, 
-  Key,
-  AlertCircle,
-  Users,
-  Link,
-  Sparkles
-} from 'lucide-react'
-import { formatDate, getDueDateColor } from '../../lib/utils'
 import { useState } from 'react'
+import {
+  Card,
+  CardContent,
+  Box,
+  Checkbox,
+  Typography,
+  Chip,
+  Stack,
+  useTheme,
+} from '@mui/material'
+import {
+  Description as FileTextIcon,
+  Videocam as VideoIcon,
+  Key as KeyIcon,
+  Error as AlertIcon,
+  Group as UsersIcon,
+  Link as LinkIcon,
+  Lightbulb as SparklesIcon,
+  Schedule as ClockIcon,
+} from '@mui/icons-material'
+import { formatDate, getDueDateColor } from '../../lib/utils'
 import { taskService } from '../../services/task.service'
 
 interface TaskCardProps {
@@ -28,8 +36,8 @@ export function TaskCard({
   onStatusChange,
   showContext = true 
 }: TaskCardProps) {
+  const theme = useTheme()
   const [isUpdating, setIsUpdating] = useState(false)
-  const StatusIcon = task.status === 'completed' ? CheckSquare : Circle
 
   const handleStatusToggle = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -51,115 +59,143 @@ export function TaskCard({
   const getContextIcon = (link: ContextLink) => {
     switch (link.type) {
       case 'note':
-        return <FileText className="w-3 h-3" />
+        return <FileTextIcon fontSize="small" />
       case 'meeting':
-        return <Video className="w-3 h-3" />
+        return <VideoIcon fontSize="small" />
       case 'credential':
-        return <Key className="w-3 h-3" />
+        return <KeyIcon fontSize="small" />
       default:
-        return <Link className="w-3 h-3" />
+        return <LinkIcon fontSize="small" />
     }
   }
 
   const getPriorityColor = () => {
-    if (!task.valueScore || !task.effortScore) return ''
+    if (!task.valueScore || !task.effortScore) return theme.palette.divider
     const priority = (task.valueScore / task.effortScore) * 100
     
-    if (priority > 150) return 'border-red-500/50' // Very high priority
-    if (priority > 100) return 'border-orange-500/50' // High priority
-    if (priority > 50) return 'border-yellow-500/50' // Medium priority
-    return '' // Low priority
+    if (priority > 150) return theme.palette.error.main
+    if (priority > 100) return theme.palette.warning.main
+    if (priority > 50) return theme.palette.info.main
+    return theme.palette.divider
+  }
+
+  const getStatusColor = () => {
+    switch (task.status) {
+      case 'completed':
+        return 'success'
+      case 'blocked':
+        return 'error'
+      case 'in_progress':
+        return 'info'
+      default:
+        return 'default'
+    }
   }
 
   return (
-    <div
+    <Card
       onClick={onClick}
-      className={`bg-gray-800/50 backdrop-blur border border-gray-700 rounded-lg p-4 hover:border-indigo-500/50 transition-all cursor-pointer ${getPriorityColor()} ${
-        isUpdating ? 'opacity-50' : ''
-      }`}
+      sx={{
+        cursor: 'pointer',
+        borderLeft: `4px solid ${getPriorityColor()}`,
+        opacity: isUpdating ? 0.6 : 1,
+        transition: 'all 0.2s',
+        '&:hover': {
+          boxShadow: 2,
+        },
+      }}
     >
-      <div className="flex items-start gap-3">
-        <button
-          onClick={handleStatusToggle}
-          disabled={isUpdating}
-          className="mt-1 p-0.5 rounded hover:bg-gray-700/50 transition-colors"
-        >
-          <StatusIcon
-            className={`w-5 h-5 ${
-              task.status === 'completed'
-                ? 'text-green-500'
-                : task.status === 'blocked'
-                ? 'text-red-500'
-                : task.status === 'in_progress'
-                ? 'text-blue-500'
-                : 'text-gray-500'
-            }`}
+      <CardContent>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+          <Checkbox
+            checked={task.status === 'completed'}
+            onChange={handleStatusToggle}
+            disabled={isUpdating}
+            sx={{ mt: -0.5 }}
           />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h3
-            className={`text-white font-medium mb-1 ${
-              task.status === 'completed' ? 'line-through opacity-60' : ''
-            }`}
-          >
-            {task.title}
-          </h3>
-          {task.description && (
-            <p className="text-gray-400 text-sm mb-2 line-clamp-2">
-              {task.description}
-            </p>
-          )}
-          <div className="space-y-2">
-            <div className="flex items-center gap-3 text-xs">
-              {task.dueDate && (
-                <div className={`flex items-center gap-1 ${getDueDateColor(task.dueDate)}`}>
-                  <Clock className="w-3 h-3" />
-                  <span>{formatDate(task.dueDate)}</span>
-                </div>
-              )}
-              {task.status === 'blocked' && (
-                <div className="flex items-center gap-1 text-red-400">
-                  <AlertCircle className="w-3 h-3" />
-                  <span>Blocked</span>
-                </div>
-              )}
-              {task.assigneeIds.length > 0 && (
-                <div className="flex items-center gap-1 text-gray-400">
-                  <Users className="w-3 h-3" />
-                  <span>{task.assigneeIds.length}</span>
-                </div>
-              )}
-              {task.valueScore !== undefined && task.effortScore !== undefined && (
-                <div className="flex items-center gap-1 text-purple-400">
-                  <Sparkles className="w-3 h-3" />
-                  <span>Priority: {Math.round((task.valueScore / task.effortScore) * 100)}</span>
-                </div>
-              )}
-            </div>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                textDecoration: task.status === 'completed' ? 'line-through' : 'none',
+                opacity: task.status === 'completed' ? 0.6 : 1,
+                mb: 0.5,
+              }}
+            >
+              {task.title}
+            </Typography>
             
-            {showContext && task.contextLinks.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap">
-                {task.contextLinks.slice(0, 3).map((link, index) => (
-                  <div
-                    key={link.id}
-                    className="flex items-center gap-1 px-2 py-0.5 bg-gray-700/50 rounded text-xs text-gray-400"
-                  >
-                    {getContextIcon(link)}
-                    <span className="truncate max-w-[100px]">
-                      {link.title || link.sourceApp}
-                    </span>
-                  </div>
-                ))}
-                {task.contextLinks.length > 3 && (
-                  <span className="text-xs text-gray-500">
-                    +{task.contextLinks.length - 3} more
-                  </span>
-                )}
-              </div>
+            {task.description && (
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                sx={{ mb: 1, display: '-webkit-box', overflow: 'hidden', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+              >
+                {task.description}
+              </Typography>
             )}
-          </div>
-        </div>
-      </div>
-    </div>
+
+            <Stack spacing={1}>
+              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                {task.dueDate && (
+                  <Chip
+                    icon={<ClockIcon />}
+                    label={formatDate(task.dueDate)}
+                    size="small"
+                    color={getStatusColor()}
+                    variant="outlined"
+                  />
+                )}
+                {task.status === 'blocked' && (
+                  <Chip
+                    icon={<AlertIcon />}
+                    label="Blocked"
+                    size="small"
+                    color="error"
+                    variant="outlined"
+                  />
+                )}
+                {task.assigneeIds.length > 0 && (
+                  <Chip
+                    icon={<UsersIcon />}
+                    label={`${task.assigneeIds.length}`}
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
+                {task.valueScore !== undefined && task.effortScore !== undefined && (
+                  <Chip
+                    icon={<SparklesIcon />}
+                    label={`Priority: ${Math.round((task.valueScore / task.effortScore) * 100)}`}
+                    size="small"
+                    color="secondary"
+                    variant="outlined"
+                  />
+                )}
+              </Stack>
+
+              {showContext && task.contextLinks.length > 0 && (
+                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                  {task.contextLinks.slice(0, 3).map((link) => (
+                    <Chip
+                      key={link.id}
+                      icon={getContextIcon(link)}
+                      label={link.title || link.sourceApp}
+                      size="small"
+                      variant="outlined"
+                    />
+                  ))}
+                  {task.contextLinks.length > 3 && (
+                    <Typography variant="caption" sx={{ alignSelf: 'center' }}>
+                      +{task.contextLinks.length - 3} more
+                    </Typography>
+                  )}
+                </Stack>
+              )}
+            </Stack>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
   )
 }
