@@ -1,43 +1,63 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Plus, FolderOpen } from 'lucide-react'
+import { Container, Box, Typography, Button, Card, CardContent, Stack, useTheme } from '@mui/material'
+import { Add as AddIcon, Folder as FolderIcon } from '@mui/icons-material'
 
 export const Route = createFileRoute('/workspaces')({ component: WorkspacesPage })
 
 function WorkspacesPage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Workspaces</h1>
-            <p className="text-gray-400">
-              Organize your projects and teams
-            </p>
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
-            <Plus size={20} />
-            <span>New Workspace</span>
-          </button>
-        </div>
+  const theme = useTheme()
 
-        <div className="grid gap-4">
-          <div className="bg-gray-800/50 backdrop-blur border border-gray-700 rounded-xl p-6 hover:border-indigo-500/50 transition-all cursor-pointer">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-indigo-600/20 rounded-lg">
-                <FolderOpen className="w-6 h-6 text-indigo-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-semibold text-white mb-2">
+  return (
+    <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Stack spacing={4}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+              Workspaces
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              Organize your projects and teams
+            </Typography>
+          </Box>
+          <Button variant="contained" color="primary" startIcon={<AddIcon />}>
+            New Workspace
+          </Button>
+        </Box>
+
+        {/* Workspaces List */}
+        <Card
+          sx={{
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            '&:hover': {
+              boxShadow: 3,
+            },
+          }}
+        >
+          <CardContent>
+            <Stack direction="row" spacing={3} alignItems="flex-start">
+              <Box
+                sx={{
+                  p: 1.5,
+                  bgcolor: 'rgba(99, 102, 241, 0.2)',
+                  borderRadius: 1,
+                }}
+              >
+                <FolderIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
                   Getting Started
-                </h3>
-                <p className="text-gray-400 text-sm">
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
                   Create your first workspace to start organizing tasks
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                </Typography>
+              </Box>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Stack>
+    </Container>
   )
 }

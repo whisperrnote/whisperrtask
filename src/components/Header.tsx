@@ -18,9 +18,9 @@ import {
   Menu as MenuIcon,
   Home as HomeIcon,
   Dashboard as DashboardIcon,
-  CheckSquare as CheckSquareIcon,
+  CheckCircle as CheckSquareIcon,
   Inbox as InboxIcon,
-  Command as CommandIcon,
+  Search as SearchIcon,
   Close as CloseIcon,
   Notifications as NotificationsIcon,
 } from '@mui/icons-material'
@@ -73,7 +73,7 @@ export default function Header() {
             onClick={() => setCommandPaletteOpen(true)}
             sx={{ display: { xs: 'none', sm: 'flex' } }}
           >
-            <CommandIcon />
+            <SearchIcon />
           </IconButton>
         </Toolbar>
       </AppBar>
