@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Home,
   Menu,
@@ -8,10 +8,27 @@ import {
   Inbox,
   Command,
   X,
+  Bell,
 } from 'lucide-react'
+import { CommandPalette, useCommandPalette } from './ui/CommandPalette'
+import { notificationService } from '../services/notification.service'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const { isOpen: isCommandPaletteOpen, setIsOpen: setCommandPaletteOpen } = useCommandPalette()
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    // Subscribe to notification updates
+    const unsubscribe = notificationService.subscribe(() => {
+      setUnreadCount(notificationService.getUnreadCount())
+    })
+    
+    // Initial count
+    setUnreadCount(notificationService.getUnreadCount())
+    
+    return () => unsubscribe()
+  }, [])
 
   return (
     <>
@@ -29,8 +46,25 @@ export default function Header() {
           </Link>
         </h1>
         <div className="ml-auto flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400">
+          <Link
+            to="/hub"
+            className="relative p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400"
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-600 text-white text-xs rounded-full flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </Link>
+          <button 
+            onClick={() => setCommandPaletteOpen(true)}
+            className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-400 flex items-center gap-2"
+          >
             <Command size={20} />
+            <kbd className="hidden md:inline-block px-2 py-0.5 text-xs text-gray-500 bg-gray-800 rounded">
+              ⌘K
+            </kbd>
           </button>
         </div>
       </header>
@@ -105,6 +139,20 @@ export default function Header() {
           </Link>
         </nav>
       </aside>
+
+      {/* Overlay when sidebar is open */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+      />
     </>
   )
 }
