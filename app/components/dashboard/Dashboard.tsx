@@ -27,9 +27,9 @@ import {
   LocalFireDepartment as StreakIcon,
   EmojiEvents as TrophyIcon,
 } from '@mui/icons-material';
-import { useTask } from '../../context/TaskContext';
+import { useTask } from '@/app/context/TaskContext';
 import { format, isToday, isTomorrow, isPast, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
-import TaskItem from '../tasks/TaskItem';
+import TaskItem from '@/app/components/tasks/TaskItem';
 
 interface StatCardProps {
   title: string;

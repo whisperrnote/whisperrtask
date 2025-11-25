@@ -33,8 +33,8 @@ import {
   ContentCopy as CopyIcon,
 } from '@mui/icons-material';
 import { format, isToday, isTomorrow, isPast, isThisWeek } from 'date-fns';
-import { Task, Priority } from '../../types';
-import { useTask } from '../../context/TaskContext';
+import { Task, Priority } from '@/app/types';
+import { useTask } from '@/app/context/TaskContext';
 
 interface TaskItemProps {
   task: Task;

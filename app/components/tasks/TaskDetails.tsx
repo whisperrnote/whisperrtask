@@ -49,8 +49,8 @@ import {
   VideoCall as MeetingIcon,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import { useTask } from '../../context/TaskContext';
-import { Priority, TaskStatus } from '../../types';
+import { useTask } from '@/app/context/TaskContext';
+import { Priority, TaskStatus } from '@/app/types';
 
 const DRAWER_WIDTH = 420;
 

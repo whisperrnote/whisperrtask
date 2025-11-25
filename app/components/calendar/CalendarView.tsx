@@ -32,8 +32,8 @@ import {
   startOfWeek,
   endOfWeek,
 } from 'date-fns';
-import { useTask } from '../../context/TaskContext';
-import { Task, Priority } from '../../types';
+import { useTask } from '@/app/context/TaskContext';
+import { Task, Priority } from '@/app/types';
 
 const priorityColors: Record<Priority, string> = {
   low: '#94a3b8',

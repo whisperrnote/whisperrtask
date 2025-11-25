@@ -32,9 +32,9 @@ import {
   ArrowDownward as DescIcon,
   CheckCircle as CheckIcon,
 } from '@mui/icons-material';
-import TaskItem from './TaskItem';
-import { useTask } from '../../context/TaskContext';
-import { ViewMode, SortField, TaskStatus } from '../../types';
+import TaskItem from '@/app/components/tasks/TaskItem';
+import { useTask } from '@/app/context/TaskContext';
+import { ViewMode, SortField, TaskStatus } from '@/app/types';
 
 export default function TaskList() {
   const theme = useTheme();

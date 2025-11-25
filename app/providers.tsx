@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ThemeProvider } from './theme';
-import { TaskProvider } from './context';
+import { ThemeProvider } from '@/app/theme';
+import { TaskProvider } from '@/app/context';
 
 interface AppProvidersProps {
   children: React.ReactNode;

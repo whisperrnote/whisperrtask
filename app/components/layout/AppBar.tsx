@@ -33,8 +33,8 @@ import {
   Keyboard as KeyboardIcon,
   Apps as AppsIcon,
 } from '@mui/icons-material';
-import { useTask } from '../../context/TaskContext';
-import { useThemeMode } from '../../theme/ThemeProvider';
+import { useTask } from '@/app/context/TaskContext';
+import { useThemeMode } from '@/app/theme/ThemeProvider';
 
 // Whisperr ecosystem apps
 const ecosystemApps = [

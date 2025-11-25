@@ -32,8 +32,8 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { useTask } from '../../context/TaskContext';
-import { Priority, TaskStatus } from '../../types';
+import { useTask } from '@/app/context/TaskContext';
+import { Priority, TaskStatus } from '@/app/types';
 
 const priorityOptions: { value: Priority; label: string; color: string }[] = [
   { value: 'low', label: 'Low', color: '#94a3b8' },

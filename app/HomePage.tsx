@@ -13,11 +13,11 @@ import {
   CalendarMonth as CalendarIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
-import { MainLayout, TaskList, TaskDialog, TaskDetails } from './components';
-import { Dashboard } from './components/dashboard';
-import { CalendarView } from './components/calendar';
-import { SettingsPanel } from './components/settings';
-import { useTask } from './context/TaskContext';
+import { MainLayout, TaskList, TaskDialog, TaskDetails } from '@/app/components';
+import { Dashboard } from '@/app/components/dashboard';
+import { CalendarView } from '@/app/components/calendar';
+import { SettingsPanel } from '@/app/components/settings';
+import { useTask } from '@/app/context/TaskContext';
 
 type TabValue = 'dashboard' | 'tasks' | 'calendar' | 'settings';
 
