@@ -13,7 +13,7 @@ import {
   CalendarMonth as CalendarIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
-import { MainLayout, TaskList, TaskDialog, TaskDetails } from '@/components';
+import { TaskList, TaskDialog, TaskDetails } from '@/components';
 import { Dashboard } from '@/components/dashboard';
 import { CalendarView } from '@/components/calendar';
 import { SettingsPanel } from '@/components/settings';
@@ -31,7 +31,7 @@ export default function HomePage() {
   };
 
   return (
-    <MainLayout>
+    <>
       {/* Page Tabs */}
       <Box sx={{ mb: 3 }}>
         <Tabs
@@ -91,6 +91,6 @@ export default function HomePage() {
 
       {/* Task Details Drawer */}
       <TaskDetails />
-    </MainLayout>
+    </>
   );
 }
