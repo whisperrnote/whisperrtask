@@ -41,9 +41,9 @@ interface StatCardProps {
     value: number;
     isPositive: boolean;
   };
-  import { useTask } from '@/context/TaskContext';
-  import { format, isToday, isTomorrow, isPast, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
-  import TaskItem from '@/components/tasks/TaskItem';
+  onClick?: () => void;
+}
+
 function StatCard({ title, value, subtitle, icon, color, trend, onClick }: StatCardProps) {
   const theme = useTheme();
 
