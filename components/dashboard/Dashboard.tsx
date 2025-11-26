@@ -24,12 +24,12 @@ import {
   Flag as FlagIcon,
   ArrowForward as ArrowIcon,
   Lightbulb as TipIcon,
-  import { useTask } from '@/context/TaskContext';
-  import TaskItem from '@/components/tasks/TaskItem';
+  LocalFireDepartment as StreakIcon,
+  EmojiEvents as TrophyIcon,
 } from '@mui/icons-material';
-import { useTask } from '@/app/context/TaskContext';
+import { useTask } from '@/context/TaskContext';
 import { format, isToday, isTomorrow, isPast, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
-import TaskItem from '@/app/components/tasks/TaskItem';
+import TaskItem from '@/components/tasks/TaskItem';
 
 interface StatCardProps {
   title: string;
@@ -41,9 +41,9 @@ interface StatCardProps {
     value: number;
     isPositive: boolean;
   };
-  onClick?: () => void;
-}
-
+  import { useTask } from '@/context/TaskContext';
+  import { format, isToday, isTomorrow, isPast, startOfWeek, endOfWeek, isWithinInterval } from 'date-fns';
+  import TaskItem from '@/components/tasks/TaskItem';
 function StatCard({ title, value, subtitle, icon, color, trend, onClick }: StatCardProps) {
   const theme = useTheme();
 
