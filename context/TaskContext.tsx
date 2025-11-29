@@ -26,7 +26,7 @@ const mapAppwriteTaskToTask = (doc: AppwriteTask): Task => {
   const otherTags = doc.tags?.filter(t => !t.startsWith('project:')) || [];
 
   return {
-    id: doc.,
+    id: doc.$id,
     title: doc.title,
     description: doc.description,
     status: (doc.status as TaskStatus) || 'todo',
@@ -41,15 +41,15 @@ const mapAppwriteTaskToTask = (doc: AppwriteTask): Task => {
     assigneeIds: doc.assigneeIds || [],
     creatorId: doc.userId,
     dueDate: doc.dueDate ? new Date(doc.dueDate) : undefined,
-    createdAt: new Date(doc.),
-    updatedAt: new Date(doc.),
+    createdAt: new Date(doc.$createdAt),
+    updatedAt: new Date(doc.$updatedAt),
     position: 0,
     isArchived: false,
   };
 };
 
 const mapAppwriteCalendarToProject = (doc: AppwriteCalendar): Project => ({
-  id: doc.,
+  id: doc.$id,
   name: doc.name,
   color: doc.color,
   description: '',
@@ -59,8 +59,8 @@ const mapAppwriteCalendarToProject = (doc: AppwriteCalendar): Project => ({
   isArchived: false,
   isFavorite: doc.isDefault,
   defaultView: 'list',
-  createdAt: new Date(doc.),
-  updatedAt: new Date(doc.),
+  createdAt: new Date(doc.$createdAt),
+  updatedAt: new Date(doc.$updatedAt),
   position: 0,
   settings: {
     defaultPriority: 'medium',
