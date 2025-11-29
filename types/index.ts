@@ -4,7 +4,6 @@ export type Priority = 'low' | 'medium' | 'high' | 'urgent';
 export type TaskStatus = 'todo' | 'in-progress' | 'done' | 'blocked' | 'cancelled';
 export type RecurrenceType = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 export type ViewMode = 'list' | 'board' | 'calendar' | 'timeline' | 'matrix';
-export type AppView = 'dashboard' | 'tasks' | 'calendar' | 'events' | 'focus' | 'settings';
 
 export interface Label {
   id: string;

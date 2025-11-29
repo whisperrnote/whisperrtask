@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Drawer,
   Box,
@@ -26,27 +28,20 @@ import {
   Schedule as ScheduleIcon,
   CheckCircle as CompletedIcon,
   Label as LabelIcon,
-  Folder as FolderIcon,
-  FolderOpen as FolderOpenIcon,
   Add as AddIcon,
   ExpandLess,
   ExpandMore,
   Star as StarIcon,
-  StarBorder as StarBorderIcon,
   ViewKanban as KanbanIcon,
   GridView as MatrixIcon,
   Timeline as TimelineIcon,
-  FilterList as FilterIcon,
-  MoreHoriz as MoreIcon,
   Settings as SettingsIcon,
-  Archive as ArchiveIcon,
   Dashboard as DashboardIcon,
   ChecklistRtl as TasksIcon,
   Event as EventIcon,
   CenterFocusStrong as FocusIcon,
 } from '@mui/icons-material';
 import { useTask } from '@/context/TaskContext';
-import { AppView } from '@/types';
 
 const DRAWER_WIDTH = 280;
 
@@ -56,11 +51,13 @@ interface NavItem {
   icon: React.ReactNode;
   badge?: number;
   color?: string;
-  view?: AppView;
+  href?: string;
 }
 
 export default function Sidebar() {
   const theme = useTheme();
+  const pathname = usePathname();
+  const router = useRouter();
   const {
     sidebarOpen,
     projects,
@@ -71,8 +68,6 @@ export default function Sidebar() {
     setFilter,
     filter,
     updateProject,
-    activeView,
-    setActiveView,
   } = useTask();
 
   const [projectsOpen, setProjectsOpen] = useState(true);
@@ -111,11 +106,11 @@ export default function Sidebar() {
   ).length;
 
   const mainNav: NavItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, view: 'dashboard' },
-    { id: 'tasks', label: 'Tasks', icon: <TasksIcon />, view: 'tasks' },
-    { id: 'calendar', label: 'Calendar', icon: <CalendarIcon />, view: 'calendar' },
-    { id: 'events', label: 'Events', icon: <EventIcon />, view: 'events' },
-    { id: 'focus', label: 'Focus Mode', icon: <FocusIcon />, view: 'focus' },
+    { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, href: '/dashboard' },
+    { id: 'tasks', label: 'Tasks', icon: <TasksIcon />, href: '/tasks' },
+    { id: 'calendar', label: 'Calendar', icon: <CalendarIcon />, href: '/calendar' },
+    { id: 'events', label: 'Events', icon: <EventIcon />, href: '/events' },
+    { id: 'focus', label: 'Focus Mode', icon: <FocusIcon />, href: '/focus' },
   ];
 
   const smartLists: NavItem[] = [
@@ -139,12 +134,8 @@ export default function Sidebar() {
     { id: 'matrix', label: 'Priority Matrix', icon: <MatrixIcon /> },
   ];
 
-  const handleMainNavClick = (view: AppView) => {
-    setActiveView(view);
-  };
-
   const handleSmartListClick = (id: string) => {
-    setActiveView('tasks'); // Ensure we are in tasks view
+    router.push('/tasks');
     switch (id) {
       case 'inbox':
         selectProject('inbox');
@@ -190,7 +181,7 @@ export default function Sidebar() {
   };
 
   const handleProjectClick = (projectId: string) => {
-    setActiveView('tasks'); // Ensure we are in tasks view
+    router.push('/tasks');
     selectProject(projectId);
     setFilter({ ...filter, projectId, status: undefined, dueDate: undefined });
   };
@@ -239,8 +230,9 @@ export default function Sidebar() {
           {mainNav.map((item) => (
             <ListItem key={item.id} disablePadding>
               <ListItemButton
-                selected={activeView === item.view}
-                onClick={() => handleMainNavClick(item.view!)}
+                component={Link}
+                href={item.href || '#'}
+                selected={pathname === item.href}
                 sx={{
                   borderRadius: 2,
                   mx: 1,
@@ -256,7 +248,7 @@ export default function Sidebar() {
                 <ListItemIcon
                   sx={{
                     minWidth: 36,
-                    color: activeView === item.view ? theme.palette.primary.main : theme.palette.text.secondary,
+                    color: pathname === item.href ? theme.palette.primary.main : theme.palette.text.secondary,
                   }}
                 >
                   {item.icon}
@@ -280,7 +272,7 @@ export default function Sidebar() {
           {smartLists.map((item) => (
             <ListItem key={item.id} disablePadding>
               <ListItemButton
-                selected={activeView === 'tasks' && (filter.projectId === item.id || (item.id === 'completed' && filter.status?.includes('done')))}
+                selected={pathname === '/tasks' && (filter.projectId === item.id || (item.id === 'completed' && filter.status?.includes('done')))}
                 onClick={() => handleSmartListClick(item.id)}
                 sx={{
                   borderRadius: 2,
@@ -361,7 +353,7 @@ export default function Sidebar() {
               {favoriteProjects.map((project) => (
                 <ListItem key={project.id} disablePadding>
                   <ListItemButton
-                    selected={activeView === 'tasks' && selectedProjectId === project.id}
+                    selected={pathname === '/tasks' && selectedProjectId === project.id}
                     onClick={() => handleProjectClick(project.id)}
                     sx={{
                       borderRadius: 2,
@@ -431,7 +423,7 @@ export default function Sidebar() {
             {regularProjects.map((project) => (
               <ListItem key={project.id} disablePadding>
                 <ListItemButton
-                  selected={activeView === 'tasks' && selectedProjectId === project.id}
+                  selected={pathname === '/tasks' && selectedProjectId === project.id}
                   onClick={() => handleProjectClick(project.id)}
                   sx={{
                     borderRadius: 2,
@@ -543,8 +535,9 @@ export default function Sidebar() {
           <List dense>
             <ListItem disablePadding>
               <ListItemButton
-                selected={activeView === 'settings'}
-                onClick={() => setActiveView('settings')}
+                component={Link}
+                href="/settings"
+                selected={pathname === '/settings'}
                 sx={{ borderRadius: 2, mx: 1 }}
               >
                 <ListItemIcon sx={{ minWidth: 36 }}>

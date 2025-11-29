@@ -14,7 +14,6 @@ import {
   TaskStatus,
   Priority,
   ViewMode,
-  AppView,
   Subtask,
   Comment,
 } from '@/types';
@@ -27,7 +26,7 @@ const mapAppwriteTaskToTask = (doc: AppwriteTask): Task => {
   const otherTags = doc.tags?.filter(t => !t.startsWith('project:')) || [];
 
   return {
-    id: doc.$id,
+    id: doc.,
     title: doc.title,
     description: doc.description,
     status: (doc.status as TaskStatus) || 'todo',
@@ -42,15 +41,15 @@ const mapAppwriteTaskToTask = (doc: AppwriteTask): Task => {
     assigneeIds: doc.assigneeIds || [],
     creatorId: doc.userId,
     dueDate: doc.dueDate ? new Date(doc.dueDate) : undefined,
-    createdAt: new Date(doc.$createdAt),
-    updatedAt: new Date(doc.$updatedAt),
+    createdAt: new Date(doc.),
+    updatedAt: new Date(doc.),
     position: 0,
     isArchived: false,
   };
 };
 
 const mapAppwriteCalendarToProject = (doc: AppwriteCalendar): Project => ({
-  id: doc.$id,
+  id: doc.,
   name: doc.name,
   color: doc.color,
   description: '',
@@ -60,8 +59,8 @@ const mapAppwriteCalendarToProject = (doc: AppwriteCalendar): Project => ({
   isArchived: false,
   isFavorite: doc.isDefault,
   defaultView: 'list',
-  createdAt: new Date(doc.$createdAt),
-  updatedAt: new Date(doc.$updatedAt),
+  createdAt: new Date(doc.),
+  updatedAt: new Date(doc.),
   position: 0,
   settings: {
     defaultPriority: 'medium',
@@ -92,7 +91,6 @@ interface TaskState {
   filter: TaskFilter;
   sort: TaskSort;
   viewMode: ViewMode;
-  activeView: AppView;
   isLoading: boolean;
   error: string | null;
   sidebarOpen: boolean;
@@ -116,7 +114,6 @@ const initialState: TaskState = {
     direction: 'asc',
   },
   viewMode: 'list',
-  activeView: 'dashboard',
   isLoading: true,
   error: null,
   sidebarOpen: true,
@@ -146,7 +143,6 @@ type TaskAction =
   | { type: 'SET_FILTER'; payload: TaskFilter }
   | { type: 'SET_SORT'; payload: TaskSort }
   | { type: 'SET_VIEW_MODE'; payload: ViewMode }
-  | { type: 'SET_ACTIVE_VIEW'; payload: AppView }
   | { type: 'TOGGLE_SIDEBAR' }
   | { type: 'SET_SIDEBAR_OPEN'; payload: boolean }
   | { type: 'SET_TASK_DIALOG_OPEN'; payload: boolean }
@@ -271,9 +267,6 @@ function taskReducer(state: TaskState, action: TaskAction): TaskState {
 
     case 'SET_VIEW_MODE':
       return { ...state, viewMode: action.payload };
-
-    case 'SET_ACTIVE_VIEW':
-      return { ...state, activeView: action.payload };
 
     case 'TOGGLE_SIDEBAR':
       return { ...state, sidebarOpen: !state.sidebarOpen };
@@ -400,7 +393,6 @@ interface TaskContextType extends TaskState {
   setFilter: (filter: TaskFilter) => void;
   setSort: (sort: TaskSort) => void;
   setViewMode: (mode: ViewMode) => void;
-  setActiveView: (view: AppView) => void;
   // UI actions
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
@@ -442,7 +434,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
         let userId = 'guest';
         try {
           const user = await account.get();
-          userId = user.$id;
+          userId = user.;
           dispatch({ type: 'SET_USER', payload: userId });
         } catch (e) {
           console.warn('Not logged in', e);
@@ -664,10 +656,6 @@ export function TaskProvider({ children }: TaskProviderProps) {
     dispatch({ type: 'SET_VIEW_MODE', payload: mode });
   }, []);
 
-  const setActiveView = useCallback((view: AppView) => {
-    dispatch({ type: 'SET_ACTIVE_VIEW', payload: view });
-  }, []);
-
   // UI
   const toggleSidebar = useCallback(() => {
     dispatch({ type: 'TOGGLE_SIDEBAR' });
@@ -818,7 +806,6 @@ export function TaskProvider({ children }: TaskProviderProps) {
     setFilter,
     setSort,
     setViewMode,
-    setActiveView,
     toggleSidebar,
     setSidebarOpen,
     setTaskDialogOpen,
