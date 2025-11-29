@@ -1,7 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import React, { createContext, useContext, useReducer, useCallback, ReactNode, useEffect } from 'react';
+import { ID } from 'appwrite';
+import { tasks as taskApi, calendars as calendarApi } from '@/lib/whisperrflow';
+import { account } from '@/lib/appwrite';
+import { Task as AppwriteTask, Calendar as AppwriteCalendar } from '@/types/whisperrflow';
 import {
   Task,
   Project,
@@ -16,362 +19,68 @@ import {
   Comment,
 } from '@/types';
 
-// Sample data for demonstration
-const createSampleData = () => {
-  const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const nextWeek = new Date(now);
-  nextWeek.setDate(nextWeek.getDate() + 7);
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
+// Mappers
+const mapAppwriteTaskToTask = (doc: AppwriteTask): Task => {
+  // Extract project ID from tags if present (format: "project:ID")
+  const projectTag = doc.tags?.find(t => t.startsWith('project:'));
+  const projectId = projectTag ? projectTag.split(':')[1] : 'inbox';
+  const otherTags = doc.tags?.filter(t => !t.startsWith('project:')) || [];
 
-  const labels: Label[] = [
-    { id: 'label-1', name: 'Bug', color: '#ef4444', description: 'Bug fixes and issues' },
-    { id: 'label-2', name: 'Feature', color: '#10b981', description: 'New features' },
-    { id: 'label-3', name: 'Enhancement', color: '#3b82f6', description: 'Improvements' },
-    { id: 'label-4', name: 'Documentation', color: '#8b5cf6', description: 'Docs updates' },
-    { id: 'label-5', name: 'Urgent', color: '#f59e0b', description: 'Needs immediate attention' },
-    { id: 'label-6', name: 'Research', color: '#ec4899', description: 'Research tasks' },
-  ];
-
-  const projects: Project[] = [
-    {
-      id: 'inbox',
-      name: 'Inbox',
-      description: 'Unorganized tasks',
-      color: '#6366f1',
-      icon: 'inbox',
-      ownerId: 'user-1',
-      memberIds: [],
-      isArchived: false,
-      isFavorite: false,
-      defaultView: 'list',
-      createdAt: now,
-      updatedAt: now,
-      position: 0,
-      settings: {
-        defaultPriority: 'medium',
-        allowSubtasks: true,
-        allowTimeTracking: true,
-        allowRecurrence: true,
-        showCompletedTasks: true,
-      },
-    },
-    {
-      id: 'project-1',
-      name: 'Whisperr Ecosystem',
-      description: 'Main development project for all Whisperr apps',
-      color: '#10b981',
-      icon: 'rocket',
-      ownerId: 'user-1',
-      memberIds: ['user-2', 'user-3'],
-      isArchived: false,
-      isFavorite: true,
-      defaultView: 'board',
-      createdAt: now,
-      updatedAt: now,
-      position: 1,
-      settings: {
-        defaultPriority: 'medium',
-        allowSubtasks: true,
-        allowTimeTracking: true,
-        allowRecurrence: true,
-        showCompletedTasks: true,
-      },
-    },
-    {
-      id: 'project-2',
-      name: 'Personal',
-      description: 'Personal tasks and goals',
-      color: '#ec4899',
-      icon: 'person',
-      ownerId: 'user-1',
-      memberIds: [],
-      isArchived: false,
-      isFavorite: false,
-      defaultView: 'list',
-      createdAt: now,
-      updatedAt: now,
-      position: 2,
-      settings: {
-        defaultPriority: 'low',
-        allowSubtasks: true,
-        allowTimeTracking: false,
-        allowRecurrence: true,
-        showCompletedTasks: false,
-      },
-    },
-    {
-      id: 'project-3',
-      name: 'Learning',
-      description: 'Courses, tutorials, and skill development',
-      color: '#f59e0b',
-      icon: 'school',
-      ownerId: 'user-1',
-      memberIds: [],
-      isArchived: false,
-      isFavorite: true,
-      defaultView: 'timeline',
-      createdAt: now,
-      updatedAt: now,
-      position: 3,
-      settings: {
-        defaultPriority: 'medium',
-        allowSubtasks: true,
-        allowTimeTracking: true,
-        allowRecurrence: false,
-        showCompletedTasks: true,
-      },
-    },
-  ];
-
-  const tasks: Task[] = [
-    {
-      id: 'task-1',
-      title: 'Design WhisperrFlow dashboard',
-      description: 'Create the main dashboard layout with widgets for task overview, upcoming deadlines, and productivity stats.',
-      status: 'in-progress',
-      priority: 'high',
-      projectId: 'project-1',
-      labels: ['label-2', 'label-3'],
-      subtasks: [
-        { id: 'st-1', title: 'Create wireframes', completed: true, createdAt: now },
-        { id: 'st-2', title: 'Design component library', completed: true, createdAt: now },
-        { id: 'st-3', title: 'Implement responsive layout', completed: false, createdAt: now },
-        { id: 'st-4', title: 'Add dark mode support', completed: false, createdAt: now },
-      ],
-      comments: [
-        {
-          id: 'comment-1',
-          content: 'Looking great so far! The color scheme is perfect.',
-          authorId: 'user-2',
-          authorName: 'Sarah Chen',
-          createdAt: yesterday,
-        },
-      ],
-      attachments: [],
-      reminders: [],
-      timeEntries: [],
-      assigneeIds: ['user-1'],
-      creatorId: 'user-1',
-      dueDate: nextWeek,
-      startDate: now,
-      estimatedTime: 480,
-      createdAt: now,
-      updatedAt: now,
-      position: 0,
-      isArchived: false,
-    },
-    {
-      id: 'task-2',
-      title: 'Implement task filtering and sorting',
-      description: 'Add ability to filter tasks by status, priority, labels, and due date. Include sorting options.',
-      status: 'todo',
-      priority: 'high',
-      projectId: 'project-1',
-      labels: ['label-2'],
-      subtasks: [],
-      comments: [],
-      attachments: [],
-      reminders: [],
-      timeEntries: [],
-      assigneeIds: ['user-1'],
-      creatorId: 'user-1',
-      dueDate: tomorrow,
-      createdAt: now,
-      updatedAt: now,
-      position: 1,
-      isArchived: false,
-    },
-    {
-      id: 'task-3',
-      title: 'Fix login authentication bug',
-      description: 'Users are getting logged out unexpectedly after 5 minutes. Need to investigate token refresh.',
-      status: 'todo',
-      priority: 'urgent',
-      projectId: 'project-1',
-      labels: ['label-1', 'label-5'],
-      subtasks: [],
-      comments: [],
-      attachments: [],
-      reminders: [],
-      timeEntries: [],
-      assigneeIds: ['user-1', 'user-3'],
-      creatorId: 'user-2',
-      dueDate: now,
-      createdAt: yesterday,
-      updatedAt: now,
-      position: 2,
-      isArchived: false,
-    },
-    {
-      id: 'task-4',
-      title: 'Write API documentation',
-      description: 'Document all REST API endpoints with examples and response schemas.',
-      status: 'todo',
-      priority: 'medium',
-      projectId: 'project-1',
-      labels: ['label-4'],
-      subtasks: [],
-      comments: [],
-      attachments: [],
-      reminders: [],
-      timeEntries: [],
-      assigneeIds: ['user-1'],
-      creatorId: 'user-1',
-      dueDate: nextWeek,
-      createdAt: now,
-      updatedAt: now,
-      position: 3,
-      isArchived: false,
-    },
-    {
-      id: 'task-5',
-      title: 'Plan weekend hiking trip',
-      description: 'Research trails, check weather, pack essentials.',
-      status: 'todo',
-      priority: 'low',
-      projectId: 'project-2',
-      labels: [],
-      subtasks: [
-        { id: 'st-5', title: 'Choose trail', completed: true, createdAt: now },
-        { id: 'st-6', title: 'Check weather forecast', completed: false, createdAt: now },
-        { id: 'st-7', title: 'Pack gear', completed: false, createdAt: now },
-      ],
-      comments: [],
-      attachments: [],
-      reminders: [],
-      timeEntries: [],
-      assigneeIds: ['user-1'],
-      creatorId: 'user-1',
-      dueDate: nextWeek,
-      createdAt: now,
-      updatedAt: now,
-      position: 0,
-      isArchived: false,
-    },
-    {
-      id: 'task-6',
-      title: 'Complete React course',
-      description: 'Finish the advanced React patterns course on Udemy.',
-      status: 'in-progress',
-      priority: 'medium',
-      projectId: 'project-3',
-      labels: ['label-6'],
-      subtasks: [
-        { id: 'st-8', title: 'Module 1: Hooks Deep Dive', completed: true, createdAt: now },
-        { id: 'st-9', title: 'Module 2: Context API', completed: true, createdAt: now },
-        { id: 'st-10', title: 'Module 3: Performance', completed: false, createdAt: now },
-        { id: 'st-11', title: 'Module 4: Testing', completed: false, createdAt: now },
-      ],
-      comments: [],
-      attachments: [],
-      reminders: [],
-      timeEntries: [],
-      assigneeIds: ['user-1'],
-      creatorId: 'user-1',
-      dueDate: nextWeek,
-      estimatedTime: 600,
-      createdAt: yesterday,
-      updatedAt: now,
-      position: 0,
-      isArchived: false,
-    },
-    {
-      id: 'task-7',
-      title: 'Review pull request #42',
-      description: 'Review and provide feedback on the new notification system implementation.',
-      status: 'blocked',
-      priority: 'medium',
-      projectId: 'project-1',
-      labels: ['label-3'],
-      subtasks: [],
-      comments: [
-        {
-          id: 'comment-2',
-          content: 'Waiting for the author to address the previous comments.',
-          authorId: 'user-1',
-          authorName: 'You',
-          createdAt: now,
-        },
-      ],
-      attachments: [],
-      reminders: [],
-      timeEntries: [],
-      assigneeIds: ['user-1'],
-      creatorId: 'user-2',
-      createdAt: yesterday,
-      updatedAt: now,
-      position: 4,
-      isArchived: false,
-    },
-    {
-      id: 'task-8',
-      title: 'Set up CI/CD pipeline',
-      description: 'Configure GitHub Actions for automated testing and deployment.',
-      status: 'done',
-      priority: 'high',
-      projectId: 'project-1',
-      labels: ['label-2'],
-      subtasks: [],
-      comments: [],
-      attachments: [],
-      reminders: [],
-      timeEntries: [],
-      assigneeIds: ['user-1'],
-      creatorId: 'user-1',
-      completedAt: yesterday,
-      createdAt: yesterday,
-      updatedAt: yesterday,
-      position: 5,
-      isArchived: false,
-    },
-    {
-      id: 'task-9',
-      title: 'Buy groceries',
-      description: 'Milk, eggs, bread, vegetables, fruits',
-      status: 'todo',
-      priority: 'low',
-      projectId: 'project-2',
-      labels: [],
-      subtasks: [],
-      comments: [],
-      attachments: [],
-      reminders: [],
-      timeEntries: [],
-      assigneeIds: ['user-1'],
-      creatorId: 'user-1',
-      dueDate: tomorrow,
-      createdAt: now,
-      updatedAt: now,
-      position: 1,
-      isArchived: false,
-    },
-    {
-      id: 'task-10',
-      title: 'Research TypeScript 5.0 features',
-      description: 'Explore new decorators, const type parameters, and other improvements.',
-      status: 'todo',
-      priority: 'low',
-      projectId: 'project-3',
-      labels: ['label-6'],
-      subtasks: [],
-      comments: [],
-      attachments: [],
-      reminders: [],
-      timeEntries: [],
-      assigneeIds: ['user-1'],
-      creatorId: 'user-1',
-      createdAt: now,
-      updatedAt: now,
-      position: 1,
-      isArchived: false,
-    },
-  ];
-
-  return { tasks, projects, labels };
+  return {
+    id: doc.$id,
+    title: doc.title,
+    description: doc.description,
+    status: (doc.status as TaskStatus) || 'todo',
+    priority: (doc.priority as Priority) || 'medium',
+    projectId: projectId,
+    labels: otherTags,
+    subtasks: [],
+    comments: [],
+    attachments: [],
+    reminders: [],
+    timeEntries: [],
+    assigneeIds: doc.assigneeIds || [],
+    creatorId: doc.userId,
+    dueDate: doc.dueDate ? new Date(doc.dueDate) : undefined,
+    createdAt: new Date(doc.$createdAt),
+    updatedAt: new Date(doc.$updatedAt),
+    position: 0,
+    isArchived: false,
+  };
 };
+
+const mapAppwriteCalendarToProject = (doc: AppwriteCalendar): Project => ({
+  id: doc.$id,
+  name: doc.name,
+  color: doc.color,
+  description: '',
+  icon: 'list',
+  ownerId: doc.userId,
+  memberIds: [],
+  isArchived: false,
+  isFavorite: doc.isDefault,
+  defaultView: 'list',
+  createdAt: new Date(doc.$createdAt),
+  updatedAt: new Date(doc.$updatedAt),
+  position: 0,
+  settings: {
+    defaultPriority: 'medium',
+    allowSubtasks: true,
+    allowTimeTracking: true,
+    allowRecurrence: true,
+    showCompletedTasks: true,
+  },
+});
+
+// Sample labels (hardcoded for now as there is no backend collection)
+const DEFAULT_LABELS: Label[] = [
+  { id: 'label-1', name: 'Bug', color: '#ef4444', description: 'Bug fixes and issues' },
+  { id: 'label-2', name: 'Feature', color: '#10b981', description: 'New features' },
+  { id: 'label-3', name: 'Enhancement', color: '#3b82f6', description: 'Improvements' },
+  { id: 'label-4', name: 'Documentation', color: '#8b5cf6', description: 'Docs updates' },
+  { id: 'label-5', name: 'Urgent', color: '#f59e0b', description: 'Needs immediate attention' },
+  { id: 'label-6', name: 'Research', color: '#ec4899', description: 'Research tasks' },
+];
 
 // State
 interface TaskState {
@@ -389,10 +98,13 @@ interface TaskState {
   sidebarOpen: boolean;
   taskDialogOpen: boolean;
   searchQuery: string;
+  userId: string | null;
 }
 
 const initialState: TaskState = {
-  ...createSampleData(),
+  tasks: [],
+  projects: [],
+  labels: DEFAULT_LABELS,
   selectedTaskId: null,
   selectedProjectId: null,
   filter: {
@@ -405,17 +117,20 @@ const initialState: TaskState = {
   },
   viewMode: 'list',
   activeView: 'dashboard',
-  isLoading: false,
+  isLoading: true,
   error: null,
   sidebarOpen: true,
   taskDialogOpen: false,
   searchQuery: '',
+  userId: null,
 };
 
 // Actions
 type TaskAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SET_DATA'; payload: { tasks: Task[]; projects: Project[] } }
+  | { type: 'SET_USER'; payload: string }
   | { type: 'ADD_TASK'; payload: Task }
   | { type: 'UPDATE_TASK'; payload: { id: string; updates: Partial<Task> } }
   | { type: 'DELETE_TASK'; payload: string }
@@ -451,6 +166,17 @@ function taskReducer(state: TaskState, action: TaskAction): TaskState {
 
     case 'SET_ERROR':
       return { ...state, error: action.payload };
+
+    case 'SET_DATA':
+      return {
+        ...state,
+        tasks: action.payload.tasks,
+        projects: action.payload.projects,
+        isLoading: false,
+      };
+
+    case 'SET_USER':
+      return { ...state, userId: action.payload };
 
     case 'ADD_TASK':
       return { ...state, tasks: [...state.tasks, action.payload] };
@@ -706,41 +432,131 @@ interface TaskProviderProps {
 export function TaskProvider({ children }: TaskProviderProps) {
   const [state, dispatch] = useReducer(taskReducer, initialState);
 
+  // Initial Data Fetch
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        
+        // Get current user
+        let userId = 'guest';
+        try {
+          const user = await account.get();
+          userId = user.$id;
+          dispatch({ type: 'SET_USER', payload: userId });
+        } catch (e) {
+          console.warn('Not logged in', e);
+        }
+
+        // Fetch tasks and calendars
+        const [tasksList, calendarsList] = await Promise.all([
+          taskApi.list(),
+          calendarApi.list()
+        ]);
+
+        const tasks = tasksList.rows.map(mapAppwriteTaskToTask);
+        const projects = calendarsList.rows.map(mapAppwriteCalendarToProject);
+
+        dispatch({ type: 'SET_DATA', payload: { tasks, projects } });
+      } catch (error) {
+        console.error('Failed to fetch data', error);
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to load data' });
+      }
+    };
+
+    fetchData();
+  }, []);
+
   // Task actions
   const addTask = useCallback(
-    (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'position'>) => {
-      const newTask: Task = {
-        ...task,
-        id: uuidv4(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        position: state.tasks.length,
-      };
-      dispatch({ type: 'ADD_TASK', payload: newTask });
+    async (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'position'>) => {
+      try {
+        const userId = state.userId || 'guest';
+        // Prepare tags with project ID
+        const tags = [...(task.labels || [])];
+        if (task.projectId && task.projectId !== 'inbox') {
+          tags.push(`project:${task.projectId}`);
+        }
+
+        const newTask = await taskApi.create({
+          title: task.title,
+          description: task.description || '',
+          status: task.status,
+          priority: task.priority,
+          dueDate: task.dueDate?.toISOString() || '',
+          userId: userId,
+          tags: tags,
+          assigneeIds: task.assigneeIds || [],
+          attachmentIds: [],
+          eventId: '',
+          parentId: '',
+          recurrenceRule: task.recurrence ? JSON.stringify(task.recurrence) : '',
+        });
+
+        dispatch({ type: 'ADD_TASK', payload: mapAppwriteTaskToTask(newTask) });
+      } catch (error) {
+        console.error('Failed to create task', error);
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to create task' });
+      }
     },
-    [state.tasks.length]
+    [state.userId]
   );
 
-  const updateTask = useCallback((id: string, updates: Partial<Task>) => {
-    dispatch({ type: 'UPDATE_TASK', payload: { id, updates } });
+  const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
+    try {
+      // Optimistic update
+      dispatch({ type: 'UPDATE_TASK', payload: { id, updates } });
+
+      const apiUpdates: any = {};
+      if (updates.title !== undefined) apiUpdates.title = updates.title;
+      if (updates.description !== undefined) apiUpdates.description = updates.description;
+      if (updates.status !== undefined) apiUpdates.status = updates.status;
+      if (updates.priority !== undefined) apiUpdates.priority = updates.priority;
+      if (updates.dueDate !== undefined) apiUpdates.dueDate = updates.dueDate?.toISOString();
+      if (updates.projectId !== undefined) {
+         // We need to fetch current tags to update project tag
+         // For now, this is complex without reading current task state inside callback
+         // Assuming we can just append or we might need to handle this better.
+         // Skipping tag update for project change for simplicity in this iteration
+      }
+
+      await taskApi.update(id, apiUpdates);
+    } catch (error) {
+      console.error('Failed to update task', error);
+      // Revert?
+    }
   }, []);
 
-  const deleteTask = useCallback((id: string) => {
-    dispatch({ type: 'DELETE_TASK', payload: id });
+  const deleteTask = useCallback(async (id: string) => {
+    try {
+      await taskApi.delete(id);
+      dispatch({ type: 'DELETE_TASK', payload: id });
+    } catch (error) {
+      console.error('Failed to delete task', error);
+    }
   }, []);
 
-  const completeTask = useCallback((id: string) => {
-    dispatch({ type: 'COMPLETE_TASK', payload: id });
-  }, []);
+  const completeTask = useCallback(async (id: string) => {
+    try {
+      const task = state.tasks.find(t => t.id === id);
+      if (!task) return;
+      
+      const newStatus = task.status === 'done' ? 'todo' : 'done';
+      await taskApi.update(id, { status: newStatus });
+      dispatch({ type: 'COMPLETE_TASK', payload: id });
+    } catch (error) {
+      console.error('Failed to complete task', error);
+    }
+  }, [state.tasks]);
 
   const selectTask = useCallback((id: string | null) => {
     dispatch({ type: 'SELECT_TASK', payload: id });
   }, []);
 
-  // Subtask actions
+  // Subtask actions (Local only for now)
   const addSubtask = useCallback((taskId: string, title: string) => {
     const subtask: Subtask = {
-      id: uuidv4(),
+      id: ID.unique(),
       title,
       completed: false,
       createdAt: new Date(),
@@ -760,50 +576,69 @@ export function TaskProvider({ children }: TaskProviderProps) {
     dispatch({ type: 'TOGGLE_SUBTASK', payload: { taskId, subtaskId } });
   }, []);
 
-  // Comment actions
+  // Comment actions (Local only for now)
   const addComment = useCallback((taskId: string, content: string) => {
     const comment: Comment = {
-      id: uuidv4(),
+      id: ID.unique(),
       content,
-      authorId: 'user-1',
+      authorId: state.userId || 'user',
       authorName: 'You',
       createdAt: new Date(),
     };
     dispatch({ type: 'ADD_COMMENT', payload: { taskId, comment } });
-  }, []);
+  }, [state.userId]);
 
   // Project actions
   const addProject = useCallback(
-    (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'position'>) => {
-      const newProject: Project = {
-        ...project,
-        id: uuidv4(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        position: state.projects.length,
-      };
-      dispatch({ type: 'ADD_PROJECT', payload: newProject });
+    async (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt' | 'position'>) => {
+      try {
+        const userId = state.userId || 'guest';
+        const newCalendar = await calendarApi.create({
+          name: project.name,
+          color: project.color,
+          isDefault: false,
+          userId: userId,
+        });
+        dispatch({ type: 'ADD_PROJECT', payload: mapAppwriteCalendarToProject(newCalendar) });
+      } catch (error) {
+        console.error('Failed to create project', error);
+      }
     },
-    [state.projects.length]
+    [state.userId]
   );
 
-  const updateProject = useCallback((id: string, updates: Partial<Project>) => {
-    dispatch({ type: 'UPDATE_PROJECT', payload: { id, updates } });
+  const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
+    try {
+      dispatch({ type: 'UPDATE_PROJECT', payload: { id, updates } });
+      
+      const apiUpdates: any = {};
+      if (updates.name) apiUpdates.name = updates.name;
+      if (updates.color) apiUpdates.color = updates.color;
+      
+      await calendarApi.update(id, apiUpdates);
+    } catch (error) {
+      console.error('Failed to update project', error);
+    }
   }, []);
 
-  const deleteProject = useCallback((id: string) => {
-    dispatch({ type: 'DELETE_PROJECT', payload: id });
+  const deleteProject = useCallback(async (id: string) => {
+    try {
+      await calendarApi.delete(id);
+      dispatch({ type: 'DELETE_PROJECT', payload: id });
+    } catch (error) {
+      console.error('Failed to delete project', error);
+    }
   }, []);
 
   const selectProject = useCallback((id: string | null) => {
     dispatch({ type: 'SELECT_PROJECT', payload: id });
   }, []);
 
-  // Label actions
+  // Label actions (Local only)
   const addLabel = useCallback((label: Omit<Label, 'id'>) => {
     const newLabel: Label = {
       ...label,
-      id: uuidv4(),
+      id: ID.unique(),
     };
     dispatch({ type: 'ADD_LABEL', payload: newLabel });
   }, []);

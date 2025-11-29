@@ -33,6 +33,7 @@ import {
 } from '@mui/icons-material';
 import { useTask } from '@/context/TaskContext';
 import { Task } from '@/types';
+import { focusSessions } from '@/lib/whisperrflow';
 
 export default function FocusMode() {
   const theme = useTheme();
@@ -54,11 +55,22 @@ export default function FocusMode() {
       }, 1000);
     } else if (timeLeft === 0) {
       setIsActive(false);
-      // Play sound or notify
+      // Save completed session
+      if (selectedTask) {
+         const duration = Math.floor(initialTime / 60);
+         focusSessions.create({
+             startTime: new Date(Date.now() - initialTime * 1000).toISOString(),
+             endTime: new Date().toISOString(),
+             duration: duration,
+             taskId: selectedTask.id,
+             status: 'completed',
+             notes: '',
+         }).catch(console.error);
+      }
     }
 
     return () => clearInterval(interval);
-  }, [isActive, isPaused, timeLeft]);
+  }, [isActive, isPaused, timeLeft, selectedTask, initialTime]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -75,7 +87,25 @@ export default function FocusMode() {
     }
   };
 
-  const stopTimer = () => {
+  const stopTimer = async () => {
+    if (isActive && selectedTask) {
+        // Save interrupted session
+        const duration = Math.floor((initialTime - timeLeft) / 60);
+        if (duration > 0) {
+            try {
+                await focusSessions.create({
+                    startTime: new Date(Date.now() - (initialTime - timeLeft) * 1000).toISOString(),
+                    endTime: new Date().toISOString(),
+                    duration: duration,
+                    taskId: selectedTask.id,
+                    status: 'interrupted',
+                    notes: '',
+                });
+            } catch (e) {
+                console.error('Failed to save focus session', e);
+            }
+        }
+    }
     setIsActive(false);
     setIsPaused(false);
     setTimeLeft(initialTime);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -10,85 +10,105 @@ import {
   Tab,
   useTheme,
   useMediaQuery,
+  CircularProgress,
 } from '@mui/material';
 import { Add, CalendarMonth, List as ListIcon } from '@mui/icons-material';
 import EventCard from './EventCard';
 import EventDialog from './EventDialog';
 import { Event } from '@/types';
 import { addDays, addHours } from 'date-fns';
-import { v4 as uuidv4 } from 'uuid';
-
-// Dummy data
-const MOCK_EVENTS: Event[] = [
-  {
-    id: '1',
-    title: 'Product Design Weekly',
-    description: 'Weekly sync with the design team to review progress and blockers.',
-    startTime: addHours(new Date(), 2),
-    endTime: addHours(new Date(), 3),
-    location: 'Google Meet',
-    url: 'https://meet.google.com/abc-defg-hij',
-    attendees: ['1', '2', '3'],
-    isPublic: false,
-    creatorId: '1',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    coverImage: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: '2',
-    title: 'WhisperrFlow Launch Party',
-    description: 'Celebrating the launch of our new productivity app!',
-    startTime: addDays(new Date(), 2),
-    endTime: addDays(addHours(new Date(), 2), 2),
-    location: 'San Francisco, CA',
-    attendees: ['1', '2', '3', '4', '5'],
-    isPublic: true,
-    creatorId: '1',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    coverImage: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: '3',
-    title: 'Deep Work Session',
-    description: 'Group focus session for deep work.',
-    startTime: addDays(new Date(), 1),
-    endTime: addDays(addHours(new Date(), 1), 1),
-    location: 'Online',
-    attendees: ['1'],
-    isPublic: true,
-    creatorId: '1',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    coverImage: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
-  },
-];
+import { events as eventApi } from '@/lib/whisperrflow';
+import { useTask } from '@/context/TaskContext';
 
 export default function EventList() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [tabValue, setTabValue] = useState(0);
-  const [events, setEvents] = useState<Event[]>(MOCK_EVENTS);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { projects } = useTask();
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  const handleCreateEvent = (eventData: any) => {
-    const newEvent: Event = {
-      id: uuidv4(),
-      ...eventData,
-      attendees: ['user-1'],
-      isPublic: false,
-      creatorId: 'user-1',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setIsLoading(true);
+        const list = await eventApi.list();
+        const mapped = list.rows.map(doc => ({
+          id: doc.$id,
+          title: doc.title,
+          description: doc.description,
+          startTime: new Date(doc.startTime),
+          endTime: new Date(doc.endTime),
+          location: doc.location,
+          url: '',
+          coverImage: '',
+          attendees: [],
+          isPublic: false,
+          creatorId: '',
+          createdAt: new Date(doc.$createdAt),
+          updatedAt: new Date(doc.$updatedAt),
+        }));
+        setEvents(mapped);
+      } catch (error) {
+        console.error('Failed to fetch events', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    setEvents([newEvent, ...events]);
-    setIsDialogOpen(false);
+
+    fetchEvents();
+  }, []);
+
+  const handleCreateEvent = async (eventData: any) => {
+    try {
+      // Use first project as calendar or default
+      // In a real app, user should select a calendar
+      const calendarId = projects[0]?.id || 'default';
+      
+      const newDoc = await eventApi.create({
+        title: eventData.title,
+        description: eventData.description || '',
+        startTime: eventData.startTime.toISOString(),
+        endTime: eventData.endTime.toISOString(),
+        location: eventData.location || '',
+        calendarId: calendarId,
+      });
+
+      const newEvent: Event = {
+        id: newDoc.$id,
+        title: newDoc.title,
+        description: newDoc.description,
+        startTime: new Date(newDoc.startTime),
+        endTime: new Date(newDoc.endTime),
+        location: newDoc.location,
+        url: '',
+        coverImage: '',
+        attendees: [],
+        isPublic: false,
+        creatorId: '',
+        createdAt: new Date(newDoc.$createdAt),
+        updatedAt: new Date(newDoc.$updatedAt),
+      };
+
+      setEvents([newEvent, ...events]);
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to create event', error);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
