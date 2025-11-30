@@ -434,7 +434,7 @@ export function TaskProvider({ children }: TaskProviderProps) {
         let userId = 'guest';
         try {
           const user = await account.get();
-          userId = user.;
+          userId = user.$id;
           dispatch({ type: 'SET_USER', payload: userId });
         } catch (e) {
           console.warn('Not logged in', e);
