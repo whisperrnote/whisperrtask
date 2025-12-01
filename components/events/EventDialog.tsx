@@ -14,17 +14,25 @@ import {
   Divider,
   useTheme,
   InputAdornment,
+  ToggleButtonGroup,
+  ToggleButton,
+  Tooltip,
+  alpha,
 } from '@mui/material';
 import {
   Close as CloseIcon,
   LocationOn,
   Link as LinkIcon,
   Image as ImageIcon,
+  Public as PublicIcon,
+  Lock as PrivateIcon,
+  LinkOff as UnlistedIcon,
 } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { addHours } from 'date-fns';
+import { EventVisibility } from '@/lib/permissions';
 
 interface EventDialogProps {
   open: boolean;
@@ -41,6 +49,7 @@ export default function EventDialog({ open, onClose, onSubmit }: EventDialogProp
   const [location, setLocation] = useState('');
   const [url, setUrl] = useState('');
   const [coverImage, setCoverImage] = useState('');
+  const [visibility, setVisibility] = useState<EventVisibility>('public');
 
   const handleSubmit = () => {
     if (!title.trim() || !startTime || !endTime) return;
@@ -53,6 +62,7 @@ export default function EventDialog({ open, onClose, onSubmit }: EventDialogProp
       location,
       url,
       coverImage,
+      visibility,
     });
 
     resetForm();
@@ -66,6 +76,7 @@ export default function EventDialog({ open, onClose, onSubmit }: EventDialogProp
     setLocation('');
     setUrl('');
     setCoverImage('');
+    setVisibility('public');
   };
 
   const handleClose = () => {
@@ -194,6 +205,62 @@ export default function EventDialog({ open, onClose, onSubmit }: EventDialogProp
                 ),
               }}
             />
+
+            {/* Visibility */}
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Event Visibility
+              </Typography>
+              <ToggleButtonGroup
+                value={visibility}
+                exclusive
+                onChange={(_, value) => value && setVisibility(value)}
+                fullWidth
+                sx={{
+                  '& .MuiToggleButton-root': {
+                    py: 1.5,
+                    flex: 1,
+                    '&.Mui-selected': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      borderColor: theme.palette.primary.main,
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.15),
+                      },
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value="public">
+                  <Tooltip title="Anyone can discover and view this event">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PublicIcon fontSize="small" />
+                      <Typography variant="body2">Public</Typography>
+                    </Box>
+                  </Tooltip>
+                </ToggleButton>
+                <ToggleButton value="unlisted">
+                  <Tooltip title="Only people with the link can view">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <UnlistedIcon fontSize="small" />
+                      <Typography variant="body2">Unlisted</Typography>
+                    </Box>
+                  </Tooltip>
+                </ToggleButton>
+                <ToggleButton value="private">
+                  <Tooltip title="Only you can view this event">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <PrivateIcon fontSize="small" />
+                      <Typography variant="body2">Private</Typography>
+                    </Box>
+                  </Tooltip>
+                </ToggleButton>
+              </ToggleButtonGroup>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                {visibility === 'public' && 'This event will be visible to everyone and can be discovered.'}
+                {visibility === 'unlisted' && 'Only people with the direct link can view this event.'}
+                {visibility === 'private' && 'Only you can see this event. Others cannot access it.'}
+              </Typography>
+            </Box>
           </Box>
         </DialogContent>
 

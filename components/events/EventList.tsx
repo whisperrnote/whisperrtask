@@ -20,6 +20,7 @@ import { addDays, addHours } from 'date-fns';
 import { events as eventApi } from '@/lib/whisperrflow';
 import { useTask } from '@/context/TaskContext';
 import { useLayout } from '@/context/LayoutContext';
+import { permissions, EventVisibility } from '@/lib/permissions';
 
 export default function EventList() {
   const theme = useTheme();
