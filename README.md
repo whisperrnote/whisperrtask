@@ -1,6 +1,6 @@
 # WhisperrFlow
 
-WhisperrFlow is the orchestrator experience inside the Whisperr ecosystem. It combines Next.js, Material UI, and Appwrite for a premium task, calendar, and event workflow that is tightly connected to the backend services living in `lib/`.
+WhisperrFlow is the orchestration layer for Whisperr’s productivity suite. It blends a premium Next.js + Material UI frontend with Appwrite-backed state to deliver task, calendar, and event workflows that feel cohesive across the entire experience.
 
 ## Highlights
 
