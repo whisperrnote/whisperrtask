@@ -13,6 +13,7 @@ import {
   Container,
   Skeleton,
   useTheme,
+  Divider,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {
@@ -140,12 +141,12 @@ export default function EventPage() {
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 3, mb: 4 }} />
         <Grid container spacing={4}>
-          <Grid item={true} xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Skeleton variant="text" height={60} width="80%" />
             <Skeleton variant="text" height={30} width="40%" />
             <Skeleton variant="text" height={200} sx={{ mt: 2 }} />
           </Grid>
-          <Grid item={true} xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 3 }} />
           </Grid>
         </Grid>
@@ -200,7 +201,7 @@ export default function EventPage() {
       <Container maxWidth="lg" sx={{ mt: -8, position: 'relative', zIndex: 1 }}>
         <Grid container spacing={4}>
           {/* Main Content */}
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Paper sx={{ p: 4, mb: 4 }}>
               <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                 <Chip
@@ -268,7 +269,7 @@ export default function EventPage() {
           </Grid>
 
           {/* Sidebar */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Paper sx={{ p: 3, position: 'sticky', top: 80 }}>
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Registration
