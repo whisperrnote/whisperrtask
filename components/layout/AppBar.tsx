@@ -34,6 +34,7 @@ import {
   Apps as AppsIcon,
 } from '@mui/icons-material';
 import { useTask } from '@/context/TaskContext';
+import { useAuth } from '@/context/auth/AuthContext';
 import { useThemeMode } from '@/theme';
 
 // Whisperr ecosystem apps
@@ -51,6 +52,7 @@ export default function AppBar() {
   const theme = useTheme();
   const { mode, toggleMode } = useThemeMode();
   const { toggleSidebar, setSearchQuery, searchQuery, setTaskDialogOpen } = useTask();
+  const { user, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [appsAnchorEl, setAppsAnchorEl] = useState<null | HTMLElement>(null);
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
@@ -255,14 +257,16 @@ export default function AppBar() {
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
-          <Box sx={{ px: 2, py: 1.5 }}>
-            <Typography variant="subtitle1" fontWeight={600}>
-              Demo User
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              user@whisperr.app
-            </Typography>
-          </Box>
+          {user && (
+            <Box sx={{ px: 2, py: 1.5 }}>
+              <Typography variant="subtitle1" fontWeight={600}>
+                {user.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {user.email}
+              </Typography>
+            </Box>
+          )}
           <Divider />
           <MenuItem>
             <ListItemIcon>
@@ -289,7 +293,7 @@ export default function AppBar() {
             <ListItemText>Help & Support</ListItemText>
           </MenuItem>
           <Divider />
-          <MenuItem sx={{ color: 'error.main' }}>
+          <MenuItem sx={{ color: 'error.main' }} onClick={() => logout()}>
             <ListItemIcon>
               <LogoutIcon fontSize="small" color="error" />
             </ListItemIcon>

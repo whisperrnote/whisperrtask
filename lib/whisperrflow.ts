@@ -1,7 +1,7 @@
 import { ID, Models } from "appwrite";
 import { tablesDB } from "./appwrite";
 import { APPWRITE_CONFIG } from "./config";
-import { Calendar, Task, Event, EventGuest, FocusSession, Note } from "../types/whisperrflow";
+import { Calendar, Task, Event, EventGuest, FocusSession } from "../types/whisperrflow";
 
 const { DATABASE_ID, TABLES } = APPWRITE_CONFIG;
 
@@ -103,7 +103,8 @@ export const focusSessions = {
 };
 
 // --- Notes ---
-
+// Notes are not managed in WhisperrFlow, but we keep the export for potential read-only integration later
+/*
 export const notes = {
     list: (queries?: string[]) => listRows<Note>(TABLES.NOTES, queries),
     create: (data: TableCreateData<Note>) => createRow<Note>(TABLES.NOTES, data),
@@ -111,3 +112,4 @@ export const notes = {
     update: (id: string, data: TableUpdateData<Note>) => updateRow<Note>(TABLES.NOTES, id, data),
     delete: (id: string) => deleteRow(TABLES.NOTES, id)
 };
+*/
