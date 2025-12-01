@@ -26,12 +26,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_URL = `https://${APPWRITE_CONFIG.AUTH.SUBDOMAIN}.${APPWRITE_CONFIG.AUTH.DOMAIN}/login`;
 
 // Routes that don't require authentication (public routes)
-const PUBLIC_ROUTES = [
-  /^\/events\/[^/]+$/, // /events/[eventId] - public event pages
+// These are pages that can be viewed without logging in
+const PUBLIC_ROUTES: (string | RegExp)[] = [
+  '/',                    // Landing page (redirects to dashboard, but should load first)
+  '/events',              // Browse public events - discovery page
+  /^\/events\/[^/]+$/,    // /events/[eventId] - individual event pages
 ];
 
 function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_ROUTES.some(pattern => pattern.test(pathname));
+  return PUBLIC_ROUTES.some(pattern => {
+    if (typeof pattern === 'string') {
+      return pathname === pattern;
+    }
+    return pattern.test(pathname);
+  });
 }
 
 export function useAuth() {

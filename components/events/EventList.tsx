@@ -20,6 +20,7 @@ import { addDays, addHours } from 'date-fns';
 import { events as eventApi } from '@/lib/whisperrflow';
 import { useTask } from '@/context/TaskContext';
 import { useLayout } from '@/context/LayoutContext';
+import { useAuth } from '@/context/auth/AuthContext';
 import { permissions, EventVisibility } from '@/lib/permissions';
 
 export default function EventList() {
@@ -31,6 +32,7 @@ export default function EventList() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { projects, userId } = useTask();
   const { openSecondarySidebar } = useLayout();
+  const { isAuthenticated, openLoginPopup } = useAuth();
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -151,9 +153,15 @@ export default function EventList() {
           variant="contained"
           startIcon={<Add />}
           sx={{ borderRadius: 50, px: 3 }}
-          onClick={() => setIsDialogOpen(true)}
+          onClick={() => {
+            if (!isAuthenticated) {
+              openLoginPopup();
+              return;
+            }
+            setIsDialogOpen(true);
+          }}
         >
-          Create Event
+          {isAuthenticated ? 'Create Event' : 'Sign in to Create'}
         </Button>
       </Box>
 
@@ -161,7 +169,7 @@ export default function EventList() {
         <Tabs value={tabValue} onChange={handleTabChange} aria-label="event tabs">
           <Tab label="Upcoming" />
           <Tab label="Past" />
-          <Tab label="My Events" />
+          {isAuthenticated && <Tab label="My Events" />}
         </Tabs>
       </Box>
 
