@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import {
   Box,
@@ -13,22 +13,22 @@ import {
   Container,
   Skeleton,
   useTheme,
-  Divider,
+  Tooltip,
+  alpha,
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
 import {
   CalendarMonth as CalendarIcon,
   AccessTime as TimeIcon,
   LocationOn as LocationIcon,
-  Person as PersonIcon,
-  Share as ShareIcon,
   CheckCircle as CheckCircleIcon,
+  ContentCopy as ContentCopyIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/context/auth/AuthContext';
 import { events as eventApi, eventGuests as guestApi } from '@/lib/whisperrflow';
-import { Event, EventGuest } from '@/types/whisperrflow';
+import { Event } from '@/types/whisperrflow';
 import { format } from 'date-fns';
-import { ID, Query } from 'appwrite';
+import { Query } from 'appwrite';
+import { generateEventPattern } from '@/utils/patternGenerator';
 
 export default function EventPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -41,6 +41,7 @@ export default function EventPage() {
   const [isRegistered, setIsRegistered] = useState(false);
   const [guestId, setGuestId] = useState<string | null>(null);
   const [registering, setRegistering] = useState(false);
+  const [shareTooltipOpen, setShareTooltipOpen] = useState(false);
 
   // Fetch event details
   useEffect(() => {
@@ -90,10 +91,6 @@ export default function EventPage() {
 
   const handleRegister = async () => {
     if (!isAuthenticated) {
-        // Trigger auth overlay through context if possible, or force check session which might show overlay
-        // In the current implementation, AuthContext handles overlay if checkSession fails/no user
-        // But here we know they aren't authenticated.
-        // We can manually call checkSession to trigger the flow if no user is found
         checkSession();
         return;
     }
@@ -115,7 +112,6 @@ export default function EventPage() {
       setGuestId(newGuest.$id);
     } catch (err) {
       console.error('Registration failed:', err);
-      // Ideally show a snackbar here
     } finally {
       setRegistering(false);
     }
@@ -136,27 +132,26 @@ export default function EventPage() {
     }
   };
 
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setShareTooltipOpen(true);
+    setTimeout(() => setShareTooltipOpen(false), 2000);
+  };
+
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="md" sx={{ py: 4 }}>
         <Skeleton variant="rectangular" height={300} sx={{ borderRadius: 3, mb: 4 }} />
-        <Grid container spacing={4}>
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Skeleton variant="text" height={60} width="80%" />
-            <Skeleton variant="text" height={30} width="40%" />
-            <Skeleton variant="text" height={200} sx={{ mt: 2 }} />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 3 }} />
-          </Grid>
-        </Grid>
+        <Skeleton variant="text" height={60} width="80%" />
+        <Skeleton variant="text" height={30} width="40%" />
+        <Skeleton variant="text" height={200} sx={{ mt: 2 }} />
       </Container>
     );
   }
 
   if (error || !event) {
     return (
-      <Container maxWidth="lg" sx={{ py: 8, textAlign: 'center' }}>
+      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
         <Typography variant="h4" gutterBottom>
           Oops!
         </Typography>
@@ -172,180 +167,217 @@ export default function EventPage() {
 
   const startDate = new Date(event.startTime);
   const endDate = new Date(event.endTime);
+  const coverStyle = event.coverImageId
+    ? { backgroundImage: `url(${event.coverImageId})` }
+    : { background: generateEventPattern(event.$id + event.title) };
 
   return (
-    <Box sx={{ minHeight: '100vh', pb: 8 }}>
-      {/* Cover Image */}
-      <Box
-        sx={{
-          height: { xs: 250, md: 400 },
-          width: '100%',
-          position: 'relative',
-          backgroundImage: event.coverImageId
-            ? `url(${event.coverImageId})` // Assuming this is a URL or processed ID
-            : 'linear-gradient(135deg, #FFC700 0%, #FFCF40 100%)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '50%',
-            background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)',
-          },
-        }}
-      />
-
-      <Container maxWidth="lg" sx={{ mt: -8, position: 'relative', zIndex: 1 }}>
-        <Grid container spacing={4}>
-          {/* Main Content */}
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Paper sx={{ p: 4, mb: 4 }}>
-              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                <Chip
-                  label={event.visibility || 'Public'}
+    <Box sx={{ minHeight: '100%', pb: 8 }}>
+      <Container maxWidth="md" sx={{ px: { xs: 0, sm: 2 } }}>
+        <Paper
+          sx={{
+            overflow: 'hidden',
+            borderRadius: { xs: 0, sm: 3 },
+            boxShadow: theme.shadows[4],
+            mb: 4,
+          }}
+        >
+          {/* Cover Image / Pattern */}
+          <Box
+            sx={{
+              height: { xs: 250, md: 350 },
+              width: '100%',
+              position: 'relative',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              ...coverStyle,
+            }}
+          >
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                display: 'flex',
+                gap: 1,
+              }}
+            >
+              <Tooltip
+                title={shareTooltipOpen ? "Link copied!" : "Copy link"}
+                open={shareTooltipOpen}
+                onClose={() => setShareTooltipOpen(false)}
+                arrow
+              >
+                <Button
+                  variant="contained"
+                  color="inherit"
                   size="small"
-                  color="primary"
-                  variant="outlined"
-                />
-                {event.status === 'cancelled' && (
-                  <Chip label="Cancelled" size="small" color="error" />
-                )}
+                  onClick={handleCopyLink}
+                  sx={{
+                    minWidth: 'auto',
+                    p: 1,
+                    backgroundColor: 'rgba(255,255,255,0.9)',
+                    color: 'text.primary',
+                    '&:hover': { backgroundColor: '#fff' },
+                  }}
+                >
+                  <ContentCopyIcon fontSize="small" />
+                </Button>
+              </Tooltip>
+            </Box>
+          </Box>
+
+          <Box sx={{ p: { xs: 3, md: 5 } }}>
+            {/* Header */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+              <Box>
+                <Typography variant="h3" fontWeight={800} gutterBottom sx={{ lineHeight: 1.2 }}>
+                  {event.title}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                  <Chip
+                    label={event.visibility || 'Public'}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
+                  {event.status === 'cancelled' && (
+                    <Chip label="Cancelled" size="small" color="error" />
+                  )}
+                </Box>
               </Box>
+            </Box>
 
-              <Typography variant="h3" fontWeight={700} gutterBottom>
-                {event.title}
-              </Typography>
-
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4, color: 'text.secondary' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <CalendarIcon fontSize="small" />
-                  <Typography variant="body2">
+            {/* Registration Area */}
+            <Paper
+              variant="outlined"
+              sx={{
+                p: 3,
+                mb: 4,
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+                backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                borderColor: alpha(theme.palette.primary.main, 0.2),
+              }}
+            >
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                  <CalendarIcon color="primary" fontSize="small" />
+                  <Typography variant="subtitle1" fontWeight={600}>
                     {format(startDate, 'EEEE, MMMM d, yyyy')}
                   </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <TimeIcon fontSize="small" />
-                  <Typography variant="body2">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TimeIcon color="action" fontSize="small" />
+                  <Typography variant="body2" color="text.secondary">
                     {format(startDate, 'h:mm a')} - {format(endDate, 'h:mm a')}
                   </Typography>
                 </Box>
               </Box>
 
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                About Event
-              </Typography>
-              <Typography variant="body1" color="text.secondary" paragraph sx={{ whiteSpace: 'pre-line' }}>
-                {event.description || 'No description provided.'}
-              </Typography>
-
-              {/* Location */}
-              <Box sx={{ mt: 4 }}>
-                <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Location
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                  <LocationIcon color="action" />
-                  <Box>
-                    <Typography variant="body1">
-                      {event.location || 'Online Event'}
-                    </Typography>
-                    {event.meetingUrl && (
-                      <Button
-                        href={event.meetingUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        sx={{ mt: 1, p: 0, minWidth: 'auto' }}
-                      >
-                        Join Meeting
-                      </Button>
-                    )}
+              <Box sx={{ width: { xs: '100%', sm: 'auto' } }}>
+                {isRegistered ? (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: { xs: 'stretch', sm: 'flex-end' } }}>
+                    <Chip
+                      icon={<CheckCircleIcon />}
+                      label="You're attending"
+                      color="success"
+                      sx={{ mb: 1, width: 'fit-content', alignSelf: { xs: 'center', sm: 'flex-end' } }}
+                    />
+                    <Button
+                      variant="text"
+                      color="error"
+                      size="small"
+                      onClick={handleCancelRegistration}
+                      disabled={registering}
+                    >
+                      Cancel Registration
+                    </Button>
                   </Box>
-                </Box>
-              </Box>
-            </Paper>
-          </Grid>
-
-          {/* Sidebar */}
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Paper sx={{ p: 3, position: 'sticky', top: 80 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                Registration
-              </Typography>
-              
-              {isRegistered ? (
-                <Box sx={{ textAlign: 'center', py: 2 }}>
-                  <CheckCircleIcon color="success" sx={{ fontSize: 48, mb: 1 }} />
-                  <Typography variant="h6" gutterBottom>
-                    You&apos;re going!
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    A confirmation has been sent to your email.
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    fullWidth
-                    onClick={handleCancelRegistration}
-                    disabled={registering}
-                  >
-                    {registering ? 'Processing...' : 'Cancel Registration'}
-                  </Button>
-                </Box>
-              ) : (
-                <Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Reserve your spot for this event.
-                  </Typography>
+                ) : (
                   <Button
                     variant="contained"
-                    fullWidth
                     size="large"
                     onClick={handleRegister}
                     disabled={registering || event.status === 'cancelled'}
+                    fullWidth
+                    sx={{ minWidth: 160 }}
                   >
-                    {registering ? 'Processing...' : isAuthenticated ? 'Register Now' : 'Sign in to Register'}
+                    {registering ? 'Processing...' : isAuthenticated ? 'Register' : 'Sign in to Register'}
                   </Button>
+                )}
+              </Box>
+            </Paper>
+
+            {/* Description */}
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" fontWeight={700} gutterBottom>
+                About
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ whiteSpace: 'pre-line', lineHeight: 1.8 }}>
+                {event.description || 'No description provided.'}
+              </Typography>
+            </Box>
+
+            {/* Location */}
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" fontWeight={700} gutterBottom>
+                Location
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                <Paper
+                  sx={{
+                    p: 1,
+                    backgroundColor: alpha(theme.palette.action.active, 0.05),
+                    borderRadius: 2,
+                    boxShadow: 'none',
+                  }}
+                >
+                  <LocationIcon color="action" />
+                </Paper>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {event.location || 'Online Event'}
+                  </Typography>
+                  {event.meetingUrl && (
+                    <Button
+                      href={event.meetingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      variant="outlined"
+                      size="small"
+                      sx={{ mt: 1 }}
+                    >
+                      Join Meeting
+                    </Button>
+                  )}
                 </Box>
-              )}
+              </Box>
+            </Box>
 
-              <Divider sx={{ my: 3 }} />
-
+            {/* Attendees */}
+            <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="subtitle2" fontWeight={600}>
+                <Typography variant="h6" fontWeight={700}>
                   Attendees
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {event.maxAttendees ? `Max ${event.maxAttendees}` : 'Unlimited'}
+                  {event.maxAttendees ? `Limited to ${event.maxAttendees} spots` : 'Unlimited spots'}
                 </Typography>
               </Box>
-              
-              <AvatarGroup max={4} sx={{ justifyContent: 'flex-end' }}>
-                {/* Placeholders for now, would fetch real guests in a fuller implementation */}
+              <AvatarGroup max={6} sx={{ justifyContent: 'flex-start' }}>
+                <Avatar />
                 <Avatar />
                 <Avatar />
                 <Avatar />
               </AvatarGroup>
-
-              <Button
-                startIcon={<ShareIcon />}
-                fullWidth
-                variant="text"
-                sx={{ mt: 2 }}
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href);
-                  // Could add toast here
-                }}
-              >
-                Share Event
-              </Button>
-            </Paper>
-          </Grid>
-        </Grid>
+            </Box>
+          </Box>
+        </Paper>
       </Container>
     </Box>
   );
 }
-

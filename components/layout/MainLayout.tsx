@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { Box, useTheme, useMediaQuery, alpha } from '@mui/material';
 import AppBar from '@/components/layout/AppBar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -16,8 +17,13 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const theme = useTheme();
+  const pathname = usePathname();
   const { sidebarOpen } = useTask();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Hide sidebar on event details pages
+  const isEventPage = pathname?.startsWith('/events/') && pathname.split('/').length > 2;
+  const showSidebar = !isMobile && !isEventPage;
 
   return (
     <Box
@@ -32,8 +38,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
       }}
     >
       <AppBar />
-      {/* Sidebar only visible on desktop */}
-      {!isMobile && <Sidebar />}
+      {/* Sidebar only visible on desktop and not on event pages */}
+      {showSidebar && <Sidebar />}
       <Box
         component="main"
         sx={{
@@ -43,6 +49,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
           pb: { xs: '100px', md: 3 },
           minHeight: '100vh',
           boxSizing: 'border-box',
+          // Adjust width if sidebar is hidden
+          maxWidth: showSidebar ? `calc(100vw - ${sidebarOpen ? DRAWER_WIDTH : 0}px)` : '100vw',
         }}
       >
         <Box
@@ -68,7 +76,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </Box>
       </Box>
       {/* BottomNav only visible on mobile */}
-      {isMobile && <BottomNav />}
+      {isMobile && !isEventPage && <BottomNav />}
       
       {/* Global Dialogs */}
       <TaskDialog />
