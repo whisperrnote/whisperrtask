@@ -82,7 +82,8 @@ export const tasks = {
 
 export const events = {
     list: (queries?: string[]) => listRows<Event>(TABLES.EVENTS, queries),
-    create: (data: TableCreateData<Event>) => createRow<Event>(TABLES.EVENTS, data),
+    create: (data: TableCreateData<Event>, permissions?: string[]) => 
+        createRow<Event>(TABLES.EVENTS, data, permissions),
     get: (id: string) => getRow<Event>(TABLES.EVENTS, id),
     update: (id: string, data: TableUpdateData<Event>) => updateRow<Event>(TABLES.EVENTS, id, data),
     delete: (id: string) => deleteRow(TABLES.EVENTS, id)

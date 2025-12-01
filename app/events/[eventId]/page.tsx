@@ -15,6 +15,7 @@ import {
   useTheme,
   Tooltip,
   alpha,
+  Alert,
 } from '@mui/material';
 import {
   CalendarMonth as CalendarIcon,
@@ -22,6 +23,8 @@ import {
   LocationOn as LocationIcon,
   CheckCircle as CheckCircleIcon,
   ContentCopy as ContentCopyIcon,
+  Lock as LockIcon,
+  Public as PublicIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/context/auth/AuthContext';
 import { events as eventApi, eventGuests as guestApi } from '@/lib/whisperrflow';
@@ -29,6 +32,7 @@ import { Event } from '@/types/whisperrflow';
 import { format } from 'date-fns';
 import { Query } from 'appwrite';
 import { generateEventPattern } from '@/utils/patternGenerator';
+import { eventPermissions } from '@/lib/permissions';
 
 export default function EventPage() {
   const { eventId } = useParams<{ eventId: string }>();
