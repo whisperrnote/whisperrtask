@@ -585,6 +585,19 @@ export default function SettingsPanel() {
               <Divider sx={{ my: 4 }} />
 
               <Typography variant="h6" fontWeight={600} gutterBottom>
+                Social Connections (Origin)
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Connect your social accounts to enrich your tasks and events with context.
+              </Typography>
+              
+              <Box sx={{ mb: 3 }}>
+                <CampConnectButton />
+              </Box>
+
+              <Divider sx={{ my: 4 }} />
+
+              <Typography variant="h6" fontWeight={600} gutterBottom>
                 Third-Party Integrations
               </Typography>
               <Alert severity="info" sx={{ mb: 2 }}>

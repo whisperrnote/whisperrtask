@@ -20,6 +20,10 @@ import {
   Checkbox,
   useTheme,
   Chip,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -34,6 +38,7 @@ import {
 import { useTask } from '@/context/TaskContext';
 import { Task } from '@/types';
 import { focusSessions } from '@/lib/whisperrflow';
+import { useOriginFocus } from '@/hooks/useOriginFocus';
 
 export default function FocusMode() {
   const theme = useTheme();
@@ -45,6 +50,16 @@ export default function FocusMode() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Origin Integration
+  const { isAuthenticated, playlists, fetchPlaylists, loading: loadingPlaylists } = useOriginFocus();
+  const [selectedPlaylist, setSelectedPlaylist] = useState<string>('');
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchPlaylists();
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
