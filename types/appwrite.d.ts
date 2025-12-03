@@ -778,6 +778,7 @@ export type Tasks = Models.Row & {
     eventId: string;
     userId: string;
     parentId: string;
+    socialHandle?: string;
 }
 
 export type Events = Models.Row & {
@@ -794,6 +795,9 @@ export type Events = Models.Row & {
     recurrenceRule: string;
     calendarId: string;
     userId: string;
+    isCampGated?: boolean;
+    campIpNftTokenId?: string;
+    campMinteable?: boolean;
 }
 
 export type EventGuests = Models.Row & {
@@ -802,6 +806,7 @@ export type EventGuests = Models.Row & {
     email: string;
     status: string;
     role: string;
+    socialHandle?: string;
 }
 
 export type FocusSessions = Models.Row & {
@@ -811,4 +816,5 @@ export type FocusSessions = Models.Row & {
     endTime: string;
     duration: number;
     status: string;
+    originSpotifyContext?: string;
 }

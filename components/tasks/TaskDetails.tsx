@@ -40,6 +40,7 @@ import { format } from 'date-fns';
 import { useTask } from '@/context/TaskContext';
 import { Priority, TaskStatus } from '@/types';
 import { useLayout } from '@/context/LayoutContext';
+import { useOriginSocial } from '@/hooks/useOriginSocial';
 
 const priorityColors: Record<Priority, string> = {
   low: '#94a3b8',
@@ -83,6 +84,18 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
   const [editDescription, setEditDescription] = useState('');
   const [statusAnchor, setStatusAnchor] = useState<null | HTMLElement>(null);
   const [priorityAnchor, setPriorityAnchor] = useState<null | HTMLElement>(null);
+
+  // Origin Social Context
+  const { isAuthenticated, socialContext, fetchSocialContext, loading: loadingSocial } = useOriginSocial();
+  
+  React.useEffect(() => {
+    if (isAuthenticated && task) {
+      const match = task.title.match(/@(\w+)/);
+      if (match) {
+        fetchSocialContext(match[1]);
+      }
+    }
+  }, [isAuthenticated, task?.title]);
 
   if (!task) {
     return (
@@ -319,6 +332,27 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
         </Box>
 
         <Divider sx={{ my: 2 }} />
+
+        {/* Social Context (Origin) */}
+        {socialContext && (
+          <Box sx={{ mb: 3, p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2 }}>
+             <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                Social Context <Chip label="Origin" size="small" color="primary" sx={{ height: 20, fontSize: '0.6rem' }} />
+             </Typography>
+             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Avatar src={socialContext.user?.profileImage} alt={socialContext.user?.name} />
+                <Box>
+                    <Typography variant="body2" fontWeight={600}>{socialContext.user?.name}</Typography>
+                    <Typography variant="caption" color="text.secondary">@{socialContext.user?.username}</Typography>
+                </Box>
+             </Box>
+             {socialContext.tweets?.map((tweet: any) => (
+                 <Paper key={tweet.id} sx={{ p: 1.5, mb: 1, bgcolor: 'background.paper' }} elevation={0} variant="outlined">
+                     <Typography variant="body2" fontSize="0.85rem">{tweet.text}</Typography>
+                 </Paper>
+             ))}
+          </Box>
+        )}
 
         {/* Subtasks */}
         <Box sx={{ mb: 3 }}>

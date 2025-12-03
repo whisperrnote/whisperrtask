@@ -80,6 +80,7 @@ export default function FocusMode() {
              taskId: selectedTask.id,
              status: 'completed',
                userId: userId || 'guest',
+               originSpotifyContext: selectedPlaylist || undefined,
          }).catch(console.error);
       }
     }
@@ -115,6 +116,7 @@ export default function FocusMode() {
                     taskId: selectedTask.id,
                     status: 'interrupted',
               userId: userId || 'guest',
+              originSpotifyContext: selectedPlaylist || undefined,
                 });
             } catch (e) {
                 console.error('Failed to save focus session', e);
@@ -284,6 +286,30 @@ export default function FocusMode() {
             </Button>
           ))}
         </Stack>
+      )}
+
+      {/* Origin Spotify Integration */}
+      {isAuthenticated && (
+        <Box sx={{ mb: 4, width: '100%', maxWidth: 500 }}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Focus Music (Spotify)</InputLabel>
+            <Select
+              value={selectedPlaylist}
+              label="Focus Music (Spotify)"
+              onChange={(e) => setSelectedPlaylist(e.target.value)}
+              disabled={loadingPlaylists}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {playlists.map((playlist: any) => (
+                <MenuItem key={playlist.id} value={playlist.id}>
+                  {playlist.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
       )}
 
       {/* Selected Task */}
