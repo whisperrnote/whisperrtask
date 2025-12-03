@@ -20,6 +20,7 @@ import {
   LinearProgress,
   useTheme,
   alpha,
+  Paper,
 } from '@mui/material';
 import {
   Close as CloseIcon,
