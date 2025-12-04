@@ -20,14 +20,14 @@ import {
   alpha,
 } from '@mui/material';
 import {
-  Close as CloseIcon,
-  LocationOn,
+  X as CloseIcon,
+  MapPin as LocationOn,
   Link as LinkIcon,
   Image as ImageIcon,
-  Public as PublicIcon,
+  Globe as PublicIcon,
   Lock as PrivateIcon,
-  LinkOff as UnlistedIcon,
-} from '@mui/icons-material';
+  Link2Off as UnlistedIcon,
+} from 'lucide-react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -109,7 +109,7 @@ export default function EventDialog({ open, onClose, onSubmit }: EventDialogProp
             Create New Event
           </Typography>
           <IconButton onClick={handleClose} size="small">
-            <CloseIcon />
+            <CloseIcon size={20} />
           </IconButton>
         </DialogTitle>
 
@@ -168,7 +168,7 @@ export default function EventDialog({ open, onClose, onSubmit }: EventDialogProp
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <LocationOn color="action" />
+                    <LocationOn color={theme.palette.action.active} size={20} />
                   </InputAdornment>
                 ),
               }}
@@ -184,7 +184,7 @@ export default function EventDialog({ open, onClose, onSubmit }: EventDialogProp
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <LinkIcon color="action" />
+                    <LinkIcon color={theme.palette.action.active} size={20} />
                   </InputAdornment>
                 ),
               }}
@@ -200,7 +200,7 @@ export default function EventDialog({ open, onClose, onSubmit }: EventDialogProp
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <ImageIcon color="action" />
+                    <ImageIcon color={theme.palette.action.active} size={20} />
                   </InputAdornment>
                 ),
               }}
@@ -233,7 +233,7 @@ export default function EventDialog({ open, onClose, onSubmit }: EventDialogProp
                 <ToggleButton value="public">
                   <Tooltip title="Anyone can discover and view this event">
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <PublicIcon fontSize="small" />
+                      <PublicIcon size={18} />
                       <Typography variant="body2">Public</Typography>
                     </Box>
                   </Tooltip>
@@ -241,7 +241,7 @@ export default function EventDialog({ open, onClose, onSubmit }: EventDialogProp
                 <ToggleButton value="unlisted">
                   <Tooltip title="Only people with the link can view">
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <UnlistedIcon fontSize="small" />
+                      <UnlistedIcon size={18} />
                       <Typography variant="body2">Unlisted</Typography>
                     </Box>
                   </Tooltip>
@@ -249,7 +249,7 @@ export default function EventDialog({ open, onClose, onSubmit }: EventDialogProp
                 <ToggleButton value="private">
                   <Tooltip title="Only you can view this event">
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <PrivateIcon fontSize="small" />
+                      <PrivateIcon size={18} />
                       <Typography variant="body2">Private</Typography>
                     </Box>
                   </Tooltip>

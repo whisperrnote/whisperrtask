@@ -328,7 +328,7 @@ export default function TaskItem({ task, onClick, compact = false }: TaskItemPro
           >
             <Tooltip title="More options">
               <IconButton size="small" onClick={handleMenuClick}>
-                <MoreIcon fontSize="small" />
+                <MoreIcon size={20} />
               </IconButton>
             </Tooltip>
           </Box>
@@ -351,25 +351,25 @@ export default function TaskItem({ task, onClick, compact = false }: TaskItemPro
           handleMenuClose(); 
         }}>
           <ListItemIcon>
-            <EditIcon fontSize="small" />
+            <EditIcon size={18} />
           </ListItemIcon>
           <ListItemText>Edit task</ListItemText>
         </MenuItem>
         <MenuItem onClick={handleMenuClose}>
           <ListItemIcon>
-            <CopyIcon fontSize="small" />
+            <CopyIcon size={18} />
           </ListItemIcon>
           <ListItemText>Duplicate</ListItemText>
         </MenuItem>
         <MenuItem onClick={handleArchive}>
           <ListItemIcon>
-            <ArchiveIcon fontSize="small" />
+            <ArchiveIcon size={18} />
           </ListItemIcon>
           <ListItemText>Archive</ListItemText>
         </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <ListItemIcon>
-            <DeleteIcon fontSize="small" color="error" />
+            <DeleteIcon size={18} color="#ef4444" />
           </ListItemIcon>
           <ListItemText>Delete</ListItemText>
         </MenuItem>

@@ -24,21 +24,21 @@ import {
   CircularProgress,
 } from '@mui/material';
 import {
-  Close as CloseIcon,
+  X as CloseIcon,
   Flag as FlagIcon,
-  CalendarMonth as CalendarIcon,
-  Schedule as ScheduleIcon,
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
+  Calendar as CalendarIcon,
+  Clock as ScheduleIcon,
+  Plus as AddIcon,
+  Trash2 as DeleteIcon,
+  Pencil as EditIcon,
   Folder as FolderIcon,
-  Label as LabelIcon,
-  Notes as NotesIcon,
-  Event as EventIcon,
-  VideoCall as MeetingIcon,
+  Tag as LabelIcon,
+  FileText as NotesIcon,
+  CalendarDays as EventIcon,
+  Video as MeetingIcon,
   Send as SendIcon,
-  AutoFixHigh as AutoFixHighIcon,
-} from '@mui/icons-material';
+  Wand2 as AutoFixHighIcon,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { useTask } from '@/context/TaskContext';
 import { Priority, TaskStatus } from '@/types';
@@ -213,10 +213,10 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
         </Box>
         <Box>
           <IconButton size="small" onClick={handleStartEdit}>
-            <EditIcon fontSize="small" />
+            <EditIcon size={20} />
           </IconButton>
           <IconButton size="small" onClick={closeSecondarySidebar}>
-            <CloseIcon />
+            <CloseIcon size={20} />
           </IconButton>
         </Box>
       </Box>
@@ -276,7 +276,7 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
           {/* Project */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 100 }}>
-              <FolderIcon fontSize="small" color="action" />
+              <FolderIcon size={18} color={theme.palette.action.active} />
               <Typography variant="body2" color="text.secondary">
                 Project
               </Typography>
@@ -294,13 +294,13 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
           {/* Priority */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 100 }}>
-              <FlagIcon fontSize="small" color="action" />
+              <FlagIcon size={18} color={theme.palette.action.active} />
               <Typography variant="body2" color="text.secondary">
                 Priority
               </Typography>
             </Box>
             <Chip
-              icon={<FlagIcon sx={{ color: `${priorityColors[task.priority]} !important` }} />}
+              icon={<FlagIcon size={16} color={priorityColors[task.priority]} />}
               label={task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
               size="small"
               onClick={(e) => setPriorityAnchor(e.currentTarget)}
@@ -315,7 +315,7 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
           {/* Due Date */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 100 }}>
-              <CalendarIcon fontSize="small" color="action" />
+              <CalendarIcon size={18} color={theme.palette.action.active} />
               <Typography variant="body2" color="text.secondary">
                 Due date
               </Typography>
@@ -329,7 +329,7 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
           {taskLabels.length > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 100 }}>
-                <LabelIcon fontSize="small" color="action" />
+                <LabelIcon size={18} color={theme.palette.action.active} />
                 <Typography variant="body2" color="text.secondary">
                   Labels
                 </Typography>
@@ -353,7 +353,7 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
           {/* Created */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 100 }}>
-              <ScheduleIcon fontSize="small" color="action" />
+              <ScheduleIcon size={18} color={theme.palette.action.active} />
               <Typography variant="body2" color="text.secondary">
                 Created
               </Typography>
@@ -426,7 +426,7 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
                     size="small"
                     onClick={() => deleteSubtask(task.id, subtask.id)}
                   >
-                    <DeleteIcon fontSize="small" />
+                    <DeleteIcon size={20} />
                   </IconButton>
                 }
               >
@@ -465,10 +465,10 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
                 color="primary"
                 title="Generate subtasks with AI"
             >
-                {isGeneratingSubtasks ? <CircularProgress size={20} /> : <AutoFixHighIcon />}
+                {isGeneratingSubtasks ? <CircularProgress size={20} /> : <AutoFixHighIcon size={20} />}
             </IconButton>
             <IconButton size="small" onClick={handleAddSubtask} disabled={!newSubtask.trim()}>
-              <AddIcon />
+              <AddIcon size={20} />
             </IconButton>
           </Box>
         </Box>
@@ -484,7 +484,7 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
             <Button
               variant="outlined"
               size="small"
-              startIcon={<NotesIcon />}
+              startIcon={<NotesIcon size={18} />}
               sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
             >
               Link to WhisperrNote
@@ -492,7 +492,7 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
             <Button
               variant="outlined"
               size="small"
-              startIcon={<EventIcon />}
+              startIcon={<EventIcon size={18} />}
               sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
             >
               Link to WhisperrEvents
@@ -500,7 +500,7 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
             <Button
               variant="outlined"
               size="small"
-              startIcon={<MeetingIcon />}
+              startIcon={<MeetingIcon size={18} />}
               sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
             >
               Link to WhisperrMeet
@@ -508,7 +508,7 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
             <Button
               variant="outlined"
               size="small"
-              startIcon={<CalendarIcon />}
+              startIcon={<CalendarIcon size={18} />}
               sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
             >
               Add to WhisperrCal
@@ -571,7 +571,7 @@ export default function TaskDetails({ taskId }: TaskDetailsProps) {
               disabled={!newComment.trim()}
               color="primary"
             >
-              <SendIcon />
+              <SendIcon size={20} />
             </IconButton>
           </Box>
         </Box>

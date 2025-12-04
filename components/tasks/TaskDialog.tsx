@@ -23,12 +23,12 @@ import {
   Autocomplete,
 } from '@mui/material';
 import {
-  Close as CloseIcon,
+  X as CloseIcon,
   Flag as FlagIcon,
-  CalendarMonth as CalendarIcon,
+  Calendar as CalendarIcon,
   Folder as FolderIcon,
-  Label as LabelIcon,
-} from '@mui/icons-material';
+  Tag as LabelIcon,
+} from 'lucide-react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -141,7 +141,7 @@ export default function TaskDialog() {
             Create New Task
           </Typography>
           <IconButton onClick={handleClose} size="small">
-            <CloseIcon />
+            <CloseIcon size={20} />
           </IconButton>
         </DialogTitle>
 
@@ -187,7 +187,7 @@ export default function TaskDialog() {
                   value={projectId}
                   onChange={(e) => setProjectId(e.target.value)}
                   label="Project"
-                  startAdornment={<FolderIcon sx={{ mr: 1, color: 'text.secondary' }} />}
+                  startAdornment={<Box sx={{ mr: 1, display: 'flex' }}><FolderIcon size={20} color={theme.palette.text.secondary} /></Box>}
                 >
                   {projects.map((project) => (
                     <MenuItem key={project.id} value={project.id}>
@@ -214,12 +214,12 @@ export default function TaskDialog() {
                   value={priority}
                   onChange={(e) => setPriority(e.target.value as Priority)}
                   label="Priority"
-                  startAdornment={<FlagIcon sx={{ mr: 1, color: priorityOptions.find(p => p.value === priority)?.color }} />}
+                  startAdornment={<Box sx={{ mr: 1, display: 'flex' }}><FlagIcon size={20} color={priorityOptions.find(p => p.value === priority)?.color} /></Box>}
                 >
                   {priorityOptions.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <FlagIcon sx={{ color: option.color, fontSize: 18 }} />
+                        <FlagIcon color={option.color} size={18} />
                         {option.label}
                       </Box>
                     </MenuItem>
@@ -293,7 +293,7 @@ export default function TaskDialog() {
                   {...props}
                   sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                 >
-                  <LabelIcon sx={{ color: option.color, fontSize: 18 }} />
+                  <LabelIcon color={option.color} size={18} />
                   {option.name}
                 </Box>
               )}

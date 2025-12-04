@@ -12,13 +12,13 @@ import {
   CircularProgress,
 } from '@mui/material';
 import {
-  Close as CloseIcon,
-  CalendarMonth as CalendarIcon,
-  AccessTime as TimeIcon,
-  LocationOn as LocationIcon,
-  Share as ShareIcon,
-  VideoCall as MeetingIcon,
-} from '@mui/icons-material';
+  X as CloseIcon,
+  Calendar as CalendarIcon,
+  Clock as TimeIcon,
+  MapPin as LocationIcon,
+  Share2 as ShareIcon,
+  Video as MeetingIcon,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { useLayout } from '@/context/LayoutContext';
 import { events as eventApi } from '@/lib/whisperrflow';
@@ -116,7 +116,7 @@ export default function EventDetails({ eventId, initialData }: EventDetailsProps
                 '&:hover': { bgcolor: 'rgba(0,0,0,0.5)' },
             }}
         >
-            <CloseIcon />
+            <CloseIcon size={24} />
         </IconButton>
       </Box>
 
@@ -145,13 +145,13 @@ export default function EventDetails({ eventId, initialData }: EventDetailsProps
                 When
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-                <CalendarIcon color="action" fontSize="small" />
+                <CalendarIcon color={theme.palette.action.active} size={18} />
                 <Typography variant="body2">
                     {format(startDate, 'EEEE, MMMM d, yyyy')}
                 </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <TimeIcon color="action" fontSize="small" />
+                <TimeIcon color={theme.palette.action.active} size={18} />
                 <Typography variant="body2">
                     {format(startDate, 'h:mm a')} - {format(endDate, 'h:mm a')}
                 </Typography>
@@ -164,7 +164,9 @@ export default function EventDetails({ eventId, initialData }: EventDetailsProps
                 Where
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                <LocationIcon color="action" fontSize="small" sx={{ mt: 0.5 }} />
+                <Box sx={{ mt: 0.5 }}>
+                    <LocationIcon color={theme.palette.action.active} size={18} />
+                </Box>
                 <Box>
                     <Typography variant="body2" gutterBottom>
                         {event.location || 'Online Event'}
@@ -173,7 +175,7 @@ export default function EventDetails({ eventId, initialData }: EventDetailsProps
                         <Button
                             variant="outlined"
                             size="small"
-                            startIcon={<MeetingIcon />}
+                            startIcon={<MeetingIcon size={18} />}
                             href={meetingUrl}
                             target="_blank"
                             sx={{ mt: 1 }}
@@ -212,7 +214,7 @@ export default function EventDetails({ eventId, initialData }: EventDetailsProps
             <Button
                 variant="outlined"
                 fullWidth
-                startIcon={<ShareIcon />}
+                startIcon={<ShareIcon size={18} />}
                 onClick={() => {
                      navigator.clipboard.writeText(`${window.location.origin}/events/${eventIdValue}`);
                 }}

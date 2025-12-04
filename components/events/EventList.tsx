@@ -12,7 +12,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import { Add, CalendarMonth, List as ListIcon } from '@mui/icons-material';
+import { Plus as Add } from 'lucide-react';
 import EventCard from './EventCard';
 import EventDialog from './EventDialog';
 import { Event } from '@/types';
@@ -151,7 +151,7 @@ export default function EventList() {
         </Box>
         <Button
           variant="contained"
-          startIcon={<Add />}
+          startIcon={<Add size={20} />}
           sx={{ borderRadius: 50, px: 3 }}
           onClick={() => {
             if (!isAuthenticated) {

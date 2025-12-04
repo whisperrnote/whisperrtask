@@ -19,19 +19,19 @@ import {
   alpha,
 } from '@mui/material';
 import {
-  Add as AddIcon,
-  Sort as SortIcon,
-  FilterList as FilterIcon,
-  ViewList as ListIcon,
-  ViewModule as BoardIcon,
-  CalendarMonth as CalendarIcon,
-  Timeline as TimelineIcon,
-  GridView as MatrixIcon,
-  ExpandMore as ExpandMoreIcon,
-  ArrowUpward as AscIcon,
-  ArrowDownward as DescIcon,
-  CheckCircle as CheckIcon,
-} from '@mui/icons-material';
+  Plus as AddIcon,
+  ArrowUpDown as SortIcon,
+  Filter as FilterIcon,
+  List as ListIcon,
+  LayoutDashboard as BoardIcon,
+  Calendar as CalendarIcon,
+  GanttChartSquare as TimelineIcon,
+  Grid as MatrixIcon,
+  ChevronDown as ExpandMoreIcon,
+  ArrowUp as AscIcon,
+  ArrowDown as DescIcon,
+  CheckCircle2 as CheckIcon,
+} from 'lucide-react';
 import TaskItem from '@/components/tasks/TaskItem';
 import { useTask } from '@/context/TaskContext';
 import { ViewMode, SortField, TaskStatus } from '@/types';
@@ -177,22 +177,22 @@ export default function TaskList() {
           >
             <ToggleButton value="list">
               <Tooltip title="List view">
-                <ListIcon fontSize="small" />
+                <ListIcon size={20} />
               </Tooltip>
             </ToggleButton>
             <ToggleButton value="board">
               <Tooltip title="Board view">
-                <BoardIcon fontSize="small" />
+                <BoardIcon size={20} />
               </Tooltip>
             </ToggleButton>
             <ToggleButton value="calendar">
               <Tooltip title="Calendar view">
-                <CalendarIcon fontSize="small" />
+                <CalendarIcon size={20} />
               </Tooltip>
             </ToggleButton>
             <ToggleButton value="timeline">
               <Tooltip title="Timeline view">
-                <TimelineIcon fontSize="small" />
+                <TimelineIcon size={20} />
               </Tooltip>
             </ToggleButton>
           </ToggleButtonGroup>
@@ -203,8 +203,8 @@ export default function TaskList() {
           <Button
             variant="text"
             size="small"
-            startIcon={<SortIcon />}
-            endIcon={<ExpandMoreIcon />}
+            startIcon={<SortIcon size={18} />}
+            endIcon={<ExpandMoreIcon size={18} />}
             onClick={handleSortClick}
             sx={{ textTransform: 'none' }}
           >
@@ -215,8 +215,8 @@ export default function TaskList() {
           <Button
             variant="text"
             size="small"
-            startIcon={<FilterIcon />}
-            endIcon={<ExpandMoreIcon />}
+            startIcon={<FilterIcon size={18} />}
+            endIcon={<ExpandMoreIcon size={18} />}
             onClick={handleFilterClick}
             sx={{ textTransform: 'none' }}
           >
@@ -235,7 +235,7 @@ export default function TaskList() {
           {/* Add Task */}
           <Button
             variant="contained"
-            startIcon={<AddIcon />}
+            startIcon={<AddIcon size={18} />}
             onClick={() => setTaskDialogOpen(true)}
           >
             Add Task
@@ -260,9 +260,9 @@ export default function TaskList() {
             {sort.field === option.field && (
               <ListItemIcon sx={{ minWidth: 'auto', ml: 1 }}>
                 {sort.direction === 'asc' ? (
-                  <AscIcon fontSize="small" />
+                  <AscIcon size={18} />
                 ) : (
-                  <DescIcon fontSize="small" />
+                  <DescIcon size={18} />
                 )}
               </ListItemIcon>
             )}
