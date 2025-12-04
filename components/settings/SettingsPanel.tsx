@@ -29,25 +29,15 @@ import {
   Grid,
 } from '@mui/material';
 import {
-  Person as PersonIcon,
-  Palette as ThemeIcon,
-  Notifications as NotifIcon,
-  Security as SecurityIcon,
-  Extension as IntegrationIcon,
-  Keyboard as KeyboardIcon,
-  Language as LanguageIcon,
-  Storage as DataIcon,
-  HelpOutline as HelpIcon,
-  Notes as NotesIcon,
-  VideoCall as MeetIcon,
-  Event as EventsIcon,
-  CalendarMonth as CalIcon,
-  Lock as PassIcon,
-  Shield as AuthIcon,
-  Check as CheckIcon,
+  User,
+  Palette,
+  LayoutGrid,
+  Keyboard,
+  Settings,
   Link as LinkIcon,
-  Settings as SettingsIcon,
-} from '@mui/icons-material';
+  Check as CheckIcon,
+} from 'lucide-react';
+import { useAuth } from '@/context/auth/AuthContext';
 import { useThemeMode } from '@/theme';
 import dynamic from 'next/dynamic';
 import { useSettings } from '@/hooks/useSettings';
@@ -140,19 +130,9 @@ const shortcuts = [
 export default function SettingsPanel() {
   const theme = useTheme();
   const { mode, setMode } = useThemeMode();
+  const { user } = useAuth();
   const { userSettings, updateSettings } = useSettings();
   const [tabValue, setTabValue] = useState(0);
-
-  // Settings state
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    reminders: true,
-    mentions: true,
-    taskAssigned: true,
-    taskCompleted: false,
-    projectUpdates: true,
-  });
 
   const [preferences, setPreferences] = useState({
     startOfWeek: 0,
@@ -164,12 +144,10 @@ export default function SettingsPanel() {
   });
 
   const settingsTabs = [
-    { label: 'Profile', icon: <PersonIcon /> },
-    { label: 'Appearance', icon: <ThemeIcon /> },
-    { label: 'Notifications', icon: <NotifIcon /> },
-    { label: 'Integrations', icon: <IntegrationIcon /> },
-    { label: 'Shortcuts', icon: <KeyboardIcon /> },
-    { label: 'Data & Privacy', icon: <DataIcon /> },
+    { label: 'General', icon: <User size={20} /> },
+    { label: 'Appearance', icon: <Palette size={20} /> },
+    { label: 'Integrations', icon: <LayoutGrid size={20} /> },
+    { label: 'Shortcuts', icon: <Keyboard size={20} /> },
   ];
 
   return (
@@ -230,11 +208,15 @@ export default function SettingsPanel() {
 
           {/* Settings Content */}
           <Box sx={{ flex: 1, p: 3, overflow: 'auto' }}>
-            {/* Profile Tab */}
+            {/* General / Account Tab */}
             <TabPanel value={tabValue} index={0}>
               <Typography variant="h6" fontWeight={600} gutterBottom>
-                Profile Settings
+                Account Information
               </Typography>
+              <Alert severity="info" sx={{ mb: 4 }}>
+                Your account details are managed by WhisperrAuth.
+              </Alert>
+              
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 4 }}>
                 <Avatar
                   sx={{
@@ -244,52 +226,54 @@ export default function SettingsPanel() {
                     bgcolor: theme.palette.primary.main,
                   }}
                 >
-                  U
+                  {user?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                 </Avatar>
                 <Box>
-                  <Button variant="outlined" size="small" sx={{ mr: 1 }}>
-                    Upload Photo
-                  </Button>
-                  <Button variant="text" size="small" color="error">
-                    Remove
-                  </Button>
+                  <Typography variant="h6">{user?.name || 'User'}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {user?.email}
+                  </Typography>
+                  <Chip 
+                    label="Whisperr ID" 
+                    size="small" 
+                    variant="outlined" 
+                    sx={{ mt: 1, fontSize: '0.7rem' }} 
+                  />
                 </Box>
               </Box>
+
               <Grid container spacing={3}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
                     label="Full Name"
-                    defaultValue="Demo User"
+                    value={user?.name || ''}
+                    disabled
+                    helperText="Managed by WhisperrAuth"
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
                     label="Email"
-                    defaultValue="user@whisperr.app"
+                    value={user?.email || ''}
                     disabled
+                    helperText="Managed by WhisperrAuth"
                   />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField fullWidth label="Username" defaultValue="@demouser" />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <TextField fullWidth label="Phone" placeholder="+1 (555) 000-0000" />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
-                    label="Bio"
-                    multiline
-                    rows={3}
-                    placeholder="Tell us about yourself..."
+                    label="User ID"
+                    value={user?.$id || ''}
+                    disabled
+                    InputProps={{
+                      readOnly: true,
+                      endAdornment: <Settings size={16} style={{ opacity: 0.5 }} />
+                    }}
                   />
                 </Grid>
               </Grid>
-              <Box sx={{ mt: 3 }}>
-                <Button variant="contained">Save Changes</Button>
-              </Box>
             </TabPanel>
 
             {/* Appearance Tab */}
@@ -408,102 +392,8 @@ export default function SettingsPanel() {
               </Box>
             </TabPanel>
 
-            {/* Notifications Tab */}
-            <TabPanel value={tabValue} index={2}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                Notification Preferences
-              </Typography>
-              <List>
-                <ListItem>
-                  <ListItemText
-                    primary="Email Notifications"
-                    secondary="Receive task updates via email"
-                  />
-                  <ListItemSecondaryAction>
-                    <Switch
-                      checked={notifications.email}
-                      onChange={(e) =>
-                        setNotifications({ ...notifications, email: e.target.checked })
-                      }
-                    />
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Push Notifications"
-                    secondary="Receive notifications in your browser"
-                  />
-                  <ListItemSecondaryAction>
-                    <Switch
-                      checked={notifications.push}
-                      onChange={(e) =>
-                        setNotifications({ ...notifications, push: e.target.checked })
-                      }
-                    />
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <Divider />
-                <ListItem>
-                  <ListItemText
-                    primary="Task Reminders"
-                    secondary="Get reminded about upcoming due dates"
-                  />
-                  <ListItemSecondaryAction>
-                    <Switch
-                      checked={notifications.reminders}
-                      onChange={(e) =>
-                        setNotifications({ ...notifications, reminders: e.target.checked })
-                      }
-                    />
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Mentions"
-                    secondary="When someone mentions you in a comment"
-                  />
-                  <ListItemSecondaryAction>
-                    <Switch
-                      checked={notifications.mentions}
-                      onChange={(e) =>
-                        setNotifications({ ...notifications, mentions: e.target.checked })
-                      }
-                    />
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Task Assigned"
-                    secondary="When a task is assigned to you"
-                  />
-                  <ListItemSecondaryAction>
-                    <Switch
-                      checked={notifications.taskAssigned}
-                      onChange={(e) =>
-                        setNotifications({ ...notifications, taskAssigned: e.target.checked })
-                      }
-                    />
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Task Completed"
-                    secondary="When someone completes a task you created"
-                  />
-                  <ListItemSecondaryAction>
-                    <Switch
-                      checked={notifications.taskCompleted}
-                      onChange={(e) =>
-                        setNotifications({ ...notifications, taskCompleted: e.target.checked })
-                      }
-                    />
-                  </ListItemSecondaryAction>
-                </ListItem>
-              </List>
-            </TabPanel>
-
             {/* Integrations Tab */}
-            <TabPanel value={tabValue} index={3}>
+            <TabPanel value={tabValue} index={2}>
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Whisperr Ecosystem
               </Typography>
@@ -566,7 +456,7 @@ export default function SettingsPanel() {
                                 label="Connected"
                                 size="small"
                                 color="success"
-                                icon={<CheckIcon />}
+                                icon={<CheckIcon size={14} />}
                                 sx={{ height: 20, fontSize: '0.7rem' }}
                               />
                             )}
@@ -578,7 +468,7 @@ export default function SettingsPanel() {
                             variant={app.connected ? 'text' : 'outlined'}
                             size="small"
                             sx={{ mt: 1.5 }}
-                            startIcon={app.connected ? <SettingsIcon /> : <LinkIcon />}
+                            startIcon={app.connected ? <Settings size={16} /> : <LinkIcon size={16} />}
                           >
                             {app.connected ? 'Configure' : 'Connect'}
                           </Button>
@@ -632,7 +522,7 @@ export default function SettingsPanel() {
             </TabPanel>
 
             {/* Keyboard Shortcuts Tab */}
-            <TabPanel value={tabValue} index={4}>
+            <TabPanel value={tabValue} index={3}>
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Keyboard Shortcuts
               </Typography>
@@ -669,47 +559,7 @@ export default function SettingsPanel() {
               </List>
             </TabPanel>
 
-            {/* Data & Privacy Tab */}
-            <TabPanel value={tabValue} index={5}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                Data & Privacy
-              </Typography>
-              <Box sx={{ mb: 4 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Export Your Data
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Download a copy of all your tasks, projects, and settings.
-                </Typography>
-                <Button variant="outlined">Export Data</Button>
-              </Box>
-
-              <Divider sx={{ my: 3 }} />
-
-              <Box sx={{ mb: 4 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Import Data
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Import tasks from other task management tools.
-                </Typography>
-                <Button variant="outlined">Import Data</Button>
-              </Box>
-
-              <Divider sx={{ my: 3 }} />
-
-              <Box>
-                <Typography variant="subtitle2" color="error" gutterBottom>
-                  Danger Zone
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Permanently delete your account and all associated data.
-                </Typography>
-                <Button variant="outlined" color="error">
-                  Delete Account
-                </Button>
-              </Box>
-            </TabPanel>
+            {/* Data & Privacy Tab Removed - IDMS Responsibility */}
           </Box>
         </Box>
       </Paper>
