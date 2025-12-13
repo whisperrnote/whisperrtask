@@ -93,7 +93,6 @@ export default function SettingsPanel() {
   });
 
   const settingsTabs = [
-    { label: 'General', icon: <User size={20} /> },
     { label: 'Appearance', icon: <Palette size={20} /> },
     { label: 'Integrations', icon: <LayoutGrid size={20} /> },
     { label: 'Shortcuts', icon: <Keyboard size={20} /> },
