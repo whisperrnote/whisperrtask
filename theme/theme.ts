@@ -38,14 +38,14 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       dark: '#7C3AED',
     },
     background: {
-      default: mode === 'light' ? '#FFF7EE' : '#0c0c0c',
-      paper: mode === 'light' ? '#ffffff' : '#1f1f1f',
+      default: mode === 'light' ? '#f8f8f8' : '#0f0f0f',
+      paper: mode === 'light' ? '#ffffff' : '#1a1a1a',
     },
     text: {
-      primary: mode === 'light' ? '#1a1a1a' : '#fafafa',
-      secondary: mode === 'light' ? '#525252' : '#a3a3a3',
+      primary: mode === 'light' ? '#0f0a08' : '#faf8f6',
+      secondary: mode === 'light' ? '#3d2f26' : '#c4b5a8',
     },
-    divider: mode === 'light' ? '#FDE68A' : '#404040',
+    divider: mode === 'light' ? '#e8e8e8' : '#2a2a2a',
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -113,7 +113,7 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
     },
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 16,
   },
   shadows: [
     'none',
@@ -219,7 +219,7 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
           backgroundColor:
             theme.palette.mode === 'light'
               ? 'rgba(255, 255, 255, 0.95)'
-              : 'rgba(32, 32, 32, 0.85)',
+              : 'rgba(26, 26, 26, 0.85)',
           borderRadius: 20,
           padding: 0,
           boxShadow:

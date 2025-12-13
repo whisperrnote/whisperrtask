@@ -226,7 +226,7 @@ export default function SettingsPanel() {
             </TabPanel>
 
             {/* Appearance Tab */}
-            <TabPanel value={tabValue} index={1}>
+            <TabPanel value={tabValue} index={0}>
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 Appearance
               </Typography>
